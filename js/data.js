@@ -1,1 +1,1 @@
-// day la file data.js
+// day la file cua T
