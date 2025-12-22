@@ -17,14 +17,3 @@ function Haversine(lat1, lon1, lat2, lon2){
 
     return R * c;
 }
-// Tọa độ User
-const userLat = 10.8231;
-const userLon = 106.6297;
-
-// Tọa độ Đập thủy lợi
-const damLat = 10.9000;
-const damLon = 106.8000;
-
-const distance = Haversine(userLat, userLon, damLat, damLon);
-
-console.log(`Khoảng cách: ${distance.toFixed(2)} km`);
