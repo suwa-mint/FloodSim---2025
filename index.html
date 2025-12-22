@@ -1,112 +1,639 @@
-<!DOCTYPE html>
-<html lang="vi">
-  <head>
+<!DOCTYPE index.html>
+<html lang="vietnamBounds">
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FloodSim</title>
-
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <title>FloodSim </title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet-geosearch@3.0.0/dist/geosearch.css"
-    />
-    <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/bundle.min.js"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      #map {
-        height: 100vh;
-        width: 100%;
-      }
-
-      .info-panel {
-        font-family: "Segoe UI", Arial, sans-serif;
-        min-width: 320px;
-      }
-      .sim-btn {
-        background: #d9534f;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        width: 100%;
-        cursor: pointer;
-        margin-top: 10px;
-        font-weight: bold;
-        border-radius: 4px;
-        transition: 0.3s;
-      }
-      .sim-btn:hover {
-        background: #c9302c;
-      }
-
-      .loading-text {
-        color: #666;
-        font-style: italic;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-      select {
-        width: 100%;
-        padding: 5px;
-        margin-top: 5px;
-        border: 1px solid #0044ff;
-        border-radius: 4px;
-        font-weight: bold;
-      }
-
-      /* CSS cho cảnh báo lịch sử */
-      .history-alert {
-        margin-top: 5px;
-        padding: 8px;
-        border-left: 4px solid;
-        font-size: 12px;
-        border-radius: 4px;
-      }
-      .alert-danger {
-        background: #fff2f0;
-        border-color: red;
-      }
-      .alert-safe {
-        background: #f6ffed;
-        border-color: green;
-      }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Map container */
+        #map {
+            flex: 1;
+            height: 100vh;
+        }
+        
+        /* Legend panel on the right */
+        .legend-panel {
+            width: 350px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            border-left: 3px solid #0044ff;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 1000;
+        }
+        
+        .panel-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0044ff;
+        }
+        
+        .panel-title {
+            color: #0044ff;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .panel-subtitle {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Search box */
+        .search-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            max-width: 90%;
+            z-index: 1000;
+        }
+        
+        .search-box {
+            display: flex;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 8px 30px rgba(0, 68, 255, 0.2);
+            overflow: hidden;
+            border: 2px solid #0044ff;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus-within {
+            box-shadow: 0 12px 40px rgba(0, 68, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .search-icon {
+            padding: 0 20px;
+            background: linear-gradient(135deg, #0044ff 0%, #0066ff 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 18px 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #333;
+            background: transparent;
+        }
+        
+        .search-input::placeholder {
+            color: #999;
+            font-weight: 500;
+        }
+        
+        .search-button {
+            background: linear-gradient(135deg, #0044ff 0%, #0066ff 100%);
+            color: white;
+            border: none;
+            padding: 0 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .search-button:hover {
+            background: linear-gradient(135deg, #0033cc 0%, #0055cc 100%);
+            padding: 0 35px;
+        }
+        
+        .search-results {
+            background: white;
+            border-radius: 15px;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 10px 35px rgba(0, 68, 255, 0.15);
+            display: none;
+            border: 2px solid #0044ff;
+            border-top: none;
+        }
+        
+        .search-result-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .search-result-item:hover {
+            background: linear-gradient(90deg, #f0f7ff 0%, #e6f0ff 100%);
+            transform: translateX(5px);
+        }
+        
+        .search-result-item i {
+            color: #0044ff;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            color: #0044ff;
+            margin-bottom: 5px;
+            font-size: 15px;
+        }
+        
+        .result-subtitle {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .no-results {
+            padding: 30px;
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            font-size: 15px;
+        }
+        
+        /* Legend sections */
+        .legend-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e6ff;
+        }
+        
+        .section-title {
+            color: #0044ff;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e6ff;
+        }
+        
+        .section-title i {
+            font-size: 18px;
+        }
+        
+        /* Legend items */
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8faff;
+            border-radius: 8px;
+            border-left: 4px solid;
+            transition: all 0.2s;
+        }
+        
+        .legend-item:hover {
+            transform: translateX(5px);
+            background: #f0f7ff;
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 3px solid white;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+        
+        .legend-text {
+            font-size: 14px;
+            color: #333;
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #f8faff 0%, #f0f7ff 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e0e6ff;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0044ff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        /* Info panel styling */
+        .info-panel {
+            min-width: 350px;
+            padding: 15px;
+        }
+        
+        .sim-btn {
+            background: linear-gradient(135deg, #d9534f 0%, #c9302c 100%);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(217, 83, 79, 0.3);
+        }
+        
+        .sim-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4);
+            background: linear-gradient(135deg, #c9302c 0%, #b92b28 100%);
+        }
+        
+        .history-alert {
+            margin-top: 15px;
+            padding: 15px;
+            border-left: 5px solid;
+            font-size: 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #fff2f0 0%, #ffe6e3 100%);
+            border-color: #d9534f;
+        }
+        
+        .alert-safe {
+            background: linear-gradient(135deg, #f6ffed 0%, #e8f5df 100%);
+            border-color: #52c41a;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            margin-top: 10px;
+            border: 2px solid #0044ff;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            background: #f8faff;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        /* Toggle button */
+        .legend-toggle {
+            position: absolute;
+            top: 20px;
+            right: 370px;
+            background: linear-gradient(135deg, #0044ff 0%, #0066ff 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            cursor: pointer;
+            z-index: 1000;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 68, 255, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .legend-toggle:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 20px rgba(0, 68, 255, 0.4);
+            background: linear-gradient(135deg, #0033cc 0%, #0055cc 100%);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .legend-panel {
+                width: 300px;
+            }
+            
+            .legend-toggle {
+                right: 320px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .legend-panel {
+                width: 100%;
+                height: 400px;
+                border-left: none;
+                border-top: 3px solid #0044ff;
+                order: 2;
+            }
+            
+            #map {
+                order: 1;
+                height: calc(100vh - 400px);
+            }
+            
+            .search-container {
+                width: 95%;
+                top: 10px;
+            }
+            
+            .search-box {
+                border-radius: 15px;
+            }
+            
+            .search-input {
+                padding: 15px;
+                font-size: 14px;
+            }
+            
+            .legend-toggle {
+                display: none;
+            }
+        }
+        
+        /* Scrollbar styling */
+        .legend-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .legend-panel::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .legend-panel::-webkit-scrollbar-thumb {
+            background: #0044ff;
+            border-radius: 3px;
+        }
+        
+        /* Loading animation */
+        .loading-text {
+            color: #666;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            font-size: 15px;
+        }
+        
+        .loading-text::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0044ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
+    <!-- Custom search container -->
+    <div class="search-container">
+        <div class="search-box">
+            <div class="search-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <input type="text" class="search-input" id="searchInput" 
+                   placeholder="Nhập tỉnh thành, thành phố hoặc địa điểm tại Việt Nam..." 
+                   autocomplete="off">
+            <button class="search-button" onclick="performSearch()">
+                <i class="fas fa-search"></i>
+                Tìm
+            </button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+    
+    <!-- Toggle button for legend -->
+    <button class="legend-toggle" id="legendToggle">
+        <i class="fas fa-layer-group"></i>
+        Chú thích
+    </button>
+    
+    <!-- Map -->
     <div id="map"></div>
+    
+    <!-- Legend panel on the right -->
+    <div class="legend-panel" id="legendPanel">
+        <div class="panel-header">
+            <div class="panel-title">
+                <i class="fas fa-water"></i>
+                FLOODSIM
+            </div>
+            <div class="panel-subtitle">Hệ thống cảnh báo ngập lụt thông minh</div>
+        </div>
+        
+        <!-- Legend section -->
+        <div class="legend-section">
+            <div class="section-title">
+                <i class="fas fa-map-marker-alt"></i>
+                CHÚ THÍCH BẢN ĐỒ
+            </div>
+            
+            <div class="legend-item" style="border-left-color: #ff0000;">
+                <div class="legend-color" style="background: #ff0000;"></div>
+                <div class="legend-text">Thủy điện lớn (>100MW)</div>
+            </div>
+            
+            <div class="legend-item" style="border-left-color: #ff9900;">
+                <div class="legend-color" style="background: #ff9900;"></div>
+                <div class="legend-text">Thủy điện vừa (30-100MW)</div>
+            </div>
+            
+            <div class="legend-item" style="border-left-color: #0066ff;">
+                <div class="legend-color" style="background: #0066ff;"></div>
+                <div class="legend-text">Hồ chứa nước & đập</div>
+            </div>
+            
+            <div class="legend-item" style="border-left-color: #33cc33;">
+                <div class="legend-color" style="background: #33cc33;"></div>
+                <div class="legend-text">Vùng an toàn (ít ngập)</div>
+            </div>
+            
+            <div class="legend-item" style="border-left-color: #ff3333;">
+                <div class="legend-color" style="background: #ff3333;"></div>
+                <div class="legend-text">Vùng nguy hiểm (thường xuyên ngập)</div>
+            </div>
+            
+            <div class="legend-item" style="border-left-color: #800080;">
+                <div class="legend-color" style="background: rgba(128, 0, 128, 0.3); border: 2px solid #800080;"></div>
+                <div class="legend-text">Khu vực ảnh hưởng xả lũ</div>
+            </div>
+        </div>
+        
+        <!-- Statistics section -->
+        <div class="legend-section">
+            <div class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                THỐNG KÊ HỆ THỐNG
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalDams">40</div>
+                    <div class="stat-label">Công trình thủy điện</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="dangerAreas">9</div>
+                    <div class="stat-label">Tỉnh nguy hiểm</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="largeDams">12</div>
+                    <div class="stat-label">Thủy điện lớn</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="mediumDams">25</div>
+                    <div class="stat-label">Thủy điện vừa</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calculation info -->
+        <div class="legend-section">
+            <div class="section-title">
+                <i class="fas fa-calculator"></i>
+                
+        
+        <!-- Instructions -->
+        <div class="legend-section">
+            <div class="section-title">
+                <i class="fas fa-info-circle"></i>
+                HƯỚNG DẪN SỬ DỤNG
+            </div>
+            
+            <div style="font-size: 13px; color: #555; line-height: 1.5;">
+                <p><strong>1.</strong> Nhấn vào bản đồ để chọn vị trí phân tích</p>
+                <p><strong>2.</strong> Hệ thống tự động tìm 3 đập gần nhất</p>
+                <p><strong>3.</strong> Chọn đập để mô phỏng xả lũ</p>
+                <p><strong>4.</strong> Nhập lưu lượng xả và chạy mô phỏng</p>
+                <p><strong>5.</strong> Xem kết quả cảnh báo trên bản đồ</p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e0e6ff;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 5px;">
+                Dữ liệu cập nhật đến tháng 12/2025
+            </div>
+            <div style="font-size: 11px; color: #aaa;">
+                © 2025 FloodSim 
+        </div>
+    </div>
 
     <script>
-      // Định nghĩa phạm vi Việt Nam
-      var vietnamBounds = L.latLngBounds(
-        [8.0, 102.0], // Tây Nam
-        [23.5, 110.0] // Đông Bắc
-      );
+        // Variables
+        let legendVisible = true;
+        
+        // Toggle legend panel
+        document.getElementById('legendToggle').addEventListener('click', function() {
+            const legendPanel = document.getElementById('legendPanel');
+            const toggleBtn = document.getElementById('legendToggle');
+            
+            if (legendVisible) {
+                legendPanel.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="fas fa-layer-group"></i> Hiện chú thích';
+                toggleBtn.style.right = '20px';
+            } else {
+                legendPanel.style.display = 'block';
+                toggleBtn.innerHTML = '<i class="fas fa-layer-group"></i> Chú thích';
+                toggleBtn.style.right = '370px';
+                if (window.innerWidth <= 1200) {
+                    toggleBtn.style.right = '320px';
+                }
+            }
+            legendVisible = !legendVisible;
+        });
+        
+        // Initialize map
+        var vietnamBounds = L.latLngBounds(
+            [8.0, 102.0],  // Tây Nam
+            [23.5, 110.0]   // Đông Bắc
+        );
 
-      // Tạo bản đồ với phạm vi giới hạn
-      var map = L.map("map", {
-        center: [16.0, 106.0],
-        zoom: 6,
-        maxBounds: vietnamBounds,
-        maxZoom: 18,
-        minZoom: 6,
-      });
+        var map = L.map('map', {
+            center: [16.0, 106.0],
+            zoom: 6,
+            maxBounds: vietnamBounds,
+            maxZoom: 18,
+            minZoom: 6
+        });
 
-      // Sử dụng OpenStreetMap làm nền bản đồ
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18,
-        noWrap: true, // Ngăn không load các tile ngoài Việt Nam
-        bounds: vietnamBounds,
-      }).addTo(map);
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | FloodSim',
+            maxZoom: 18,
+            noWrap: true,
+            bounds: vietnamBounds
+        }).addTo(map);
+
+      
+        
 
       // Thêm layer tên địa phương
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -440,209 +967,105 @@
         },
       ];
 
-      // 2. DATA: DANH SÁCH ĐEN (Vùng hay ngập)
-      var vungNguyHiem = [
-        "Thừa Thiên Huế",
-        "Quảng Trị",
-        "Quảng Bình",
-        "Hà Tĩnh",
-        "Nghệ An",
-        "Quảng Nam",
-        "Phú Yên",
-        "Khánh Hoà",
-        "Bình Định",
-      ];
+        // Dangerous areas
+        var vungNguyHiem = ["Thừa Thiên Huế", "Quảng Trị", "Quảng Bình", "Hà Tĩnh", "Nghệ An", "Quảng Nam", "Phú Yên", "Khánh Hoà", "Bình Định"];
 
-      // Vẽ Marker lên bản đồ
-      danhSachDap.forEach((dap) => {
-        var color =
-          dap.loai === "Lớn" ? "red" : dap.loai === "Vừa" ? "orange" : "blue";
-        var size = dap.loai === "Lớn" ? 16 : 12;
-        var icon = L.divIcon({
-          className: "custom-div-icon",
-          html: `<div style='background:${color}; width:${size}px; height:${size}px; border-radius:50%; border:2px solid white; box-shadow:0 0 5px ${color};'></div>`,
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2],
-        });
-        L.marker([dap.vido, dap.kinhdo], { icon: icon })
-          .addTo(map)
-          .bindTooltip(dap.ten);
-        // Giảm bán kính vòng tròn để tránh chồng chéo
-        L.circle([dap.vido, dap.kinhdo], {
-          color: "blue",
-          fillOpacity: 0.05,
-          radius: 1000,
-        }).addTo(map);
-      });
-
-      var currentResults = null;
-      var selectedPoint = null;
-      window.currentTop3 = [];
-
-      // 3. API: LẤY ĐỘ CAO (Open-Meteo)
-      async function getDoCao(lat, lng) {
-        try {
-          const res = await fetch(
-            `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`
-          );
-          const data = await res.json();
-          return data.elevation[0];
-        } catch (e) {
-          return 5;
-        } // Mất mạng trả về 5m
-      }
-
-      // 4. API: LẤY TÊN TỈNH (BigDataCloud) - Để check lịch sử
-      async function getTenTinh(lat, lng) {
-        try {
-          const res = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=vi`
-          );
-          const data = await res.json();
-          return data.principalSubdivision || "Không xác định";
-        } catch (e) {
-          return "Không xác định";
-        }
-      }
-
-      // 5. LOGIC: TÍNH TOÁN
-      function tinhToan(dist, doCao) {
-        var heSo = 1 + doCao / 3;
-        return Math.round((500 + dist * 0.2) * heSo);
-      }
-
-      // 6. SỰ KIỆN CLICK (Tích hợp tất cả)
-      map.on("click", async function (e) {
-        selectedPoint = e.latlng;
-        L.popup()
-          .setLatLng(e.latlng)
-          .setContent(
-            "<div class='loading-text'>⏳ Đang phân tích dữ liệu đa nguồn...</div>"
-          )
-          .openOn(map);
-        if (currentResults) {
-          map.removeLayer(currentResults.marker);
-          map.removeLayer(currentResults.circle);
+        // Function to perform search
+        function timKiem() {
+            var keyword = document.getElementById("searchInput").value.toLowerCase();
+            var results = danhSachThuyDien.filter(function(item) {
+                return item.ten.toLowerCase().includes(keyword);
+            });
+            hienThiKetQua(results);
         }
 
-        // A. Tìm 3 đập gần nhất
-        var daps = danhSachDap.map((d) => {
-          return {
-            ...d,
-            dist: L.latLng(d.vido, d.kinhdo).distanceTo(e.latlng),
-          };
-        });
-        daps.sort((a, b) => a.dist - b.dist);
-        window.currentTop3 = daps.slice(0, 3);
-        var dapGanNhat = window.currentTop3[0];
+// Hoàn chỉnh: hàm tìm kiếm (gọi bởi nút Tìm)
+function performSearch() {
+  const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  const resultsContainer = document.getElementById('searchResults');
 
-        // B. Gọi 2 API cùng lúc (Độ cao + Tên tỉnh)
-        var doCao = await getDoCao(e.latlng.lat, e.latlng.lng);
-        var tenTinh = await getTenTinh(e.latlng.lat, e.latlng.lng);
+  if (!q) {
+    resultsContainer.innerHTML = '<div class="no-results">Vui lòng nhập từ khóa tìm kiếm</div>';
+    resultsContainer.style.display = 'block';
+    return;
+  }
 
-        // C. Check Lịch sử ngập
-        var htmlCanhBao = "";
-        if (vungNguyHiem.some((v) => tenTinh.includes(v))) {
-          htmlCanhBao = `<div class="history-alert alert-danger">⚠️ <b>CẢNH BÁO LỊCH SỬ:</b><br>${tenTinh} là vùng thường xuyên ngập lụt.</div>`;
-        } else {
-          htmlCanhBao = `<div class="history-alert alert-safe">✅ <b>LỊCH SỬ AN TOÀN:</b><br>${tenTinh} ít ghi nhận ngập nghiêm trọng.</div>`;
-        }
+  const prov = (typeof vietnamProvinces !== 'undefined' ? vietnamProvinces : []).filter(p => p.name.toLowerCase().includes(q));
+  const dams = (typeof danhSachDap !== 'undefined' ? danhSachDap : []).filter(d => (d.ten && d.ten.toLowerCase().includes(q)) || (d.thuongNguon && d.thuongNguon.toLowerCase().includes(q)));
 
-        // D. Hiển thị Popup
-        var nguong = tinhToan(dapGanNhat.dist, doCao);
-        var options = window.currentTop3
-          .map(
-            (d) =>
-              `<option value="${d.id}">${d.ten} (${(d.dist / 1000).toFixed(
-                1
-              )} km)</option>`
-          )
-          .join("");
+  let html = '';
+  if (prov.length) {
+    html += '<div style="padding:8px 12px;"><strong>Kết quả tỉnh/thành phố:</strong></div>';
+    prov.forEach(p => {
+      html += `<div class="search-result-item" data-lat="${p.lat}" data-lng="${p.lng}">
+                 <i class="fas fa-map-marker-alt"></i>
+                 <div><div class="result-title">${p.name}</div><div class="result-subtitle">Loại: ${p.type}</div></div>
+               </div>`;
+    });
+  }
+  if (dams.length) {
+    html += '<div style="padding:8px 12px;"><strong>Kết quả thủy điện:</strong></div>';
+    dams.forEach(d => {
+      html += `<div class="search-result-item" data-lat="${d.vido}" data-lng="${d.kinhdo}">
+                 <i class="fas fa-water"></i>
+                 <div><div class="result-title">${d.ten}</div><div class="result-subtitle">${d.thuongNguon || ''} • ${d.congSuat || 'N/A'}</div></div>
+               </div>`;
+    });
+  }
+  if (!html) html = '<div class="no-results">Không tìm thấy kết quả phù hợp</div>';
 
-        var popupHTML = `
-                <div class="info-panel">
-                    <h3 style="margin:0; color:#0044ff; border-bottom:2px solid #ddd;">Phân Tích Đa Nguồn</h3>
-                    ${htmlCanhBao} <div style="margin-top:10px;">
-                        <label style="font-size:12px; font-weight:bold;">Nguồn xả lũ giả lập:</label>
-                        <select id="selectDap" onchange="doiDap(this.value, ${doCao})">${options}</select>
-                    </div>
+  resultsContainer.innerHTML = html;
+  resultsContainer.style.display = 'block';
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px; font-size:13px">
-                        <div style="background:#f5f5f5; padding:5px;">⛰️ Độ cao: <b>${doCao}m</b></div>
-                        <div style="background:#eeffee; padding:5px;">🛡️ Ngưỡng: <b id="lblNguong" style="color:green">${nguong.toLocaleString()}</b></div>
-                    </div>
-
-                    <div style="background:#fff0f0; padding:10px; margin-top:10px; border:1px solid #ffccc7;">
-                        <label><b>Xả lũ (m³/s):</b></label>
-                        <input type="number" id="inpXa" value="${
-                          nguong + 500
-                        }" style="width:100%; padding:5px; margin-top:5px;">
-                        <button class="sim-btn" onclick="chaySim(${doCao})">CHẠY MÔ PHỎNG</button>
-                    </div>
-                </div>
-            `;
-        L.popup().setLatLng(e.latlng).setContent(popupHTML).openOn(map);
-      });
-
-      // Hỗ trợ đổi đập
-      window.doiDap = function (id, doCao) {
-        var dap = window.currentTop3.find((d) => d.id == id);
-        var nguong = tinhToan(dap.dist, doCao);
-        document.getElementById("lblNguong").innerText =
-          nguong.toLocaleString();
-        document.getElementById("inpXa").value = nguong + 500;
-      };
-
-      // Chạy mô phỏng
-      window.chaySim = function (doCao) {
-        var id = document.getElementById("selectDap").value;
-        var val = parseFloat(document.getElementById("inpXa").value);
-        var dap = window.currentTop3.find((d) => d.id == id);
-        var nguong = tinhToan(dap.dist, doCao);
-
-        map.closePopup();
-
-        var color = val > nguong ? "red" : "green";
-        var text = val > nguong ? "CẢNH BÁO NGẬP" : "AN TOÀN";
-        var radius = val > nguong ? (val - nguong) * 2 : 300;
-        if (radius > 50000) radius = 50000;
-        if (radius < 300) radius = 300;
-
-        // Hiện bán kính
-        var txtRadius =
-          radius >= 1000
-            ? (radius / 1000).toFixed(1) + " km"
-            : radius.toFixed(0) + " m";
-
-        var marker = L.marker([selectedPoint.lat, selectedPoint.lng])
-          .addTo(map)
-          .bindPopup(
-            `<b style="color:${color}">${text}</b><br>Nguồn: ${dap.ten}<br>Phạm vi: ${txtRadius}`
-          )
-          .openPopup();
-
-        var circle = L.circle([selectedPoint.lat, selectedPoint.lng], {
-          color: color,
-          fillColor: color,
-          fillOpacity: 0.5,
-          radius: radius,
-        }).addTo(map);
-
-        currentResults = { marker: marker, circle: circle };
-        map.flyTo(selectedPoint, 11);
-      };
-
-      // Giới hạn bản đồ chỉ hiển thị Việt Nam
-      map.setMaxBounds(vietnamBounds);
-
-      //Thêm thanh tìm kiếm
-      const searchControl = new GeoSearch.GeoSearchControl({
-        provider: new GeoSearch.OpenStreetMapProvider(),
-        style: "bar",
-        searchLabel: "Tìm kiếm địa điểm tại Việt Nam...",
-        autoClose: true,
-      });
-      map.addControl(searchControl);
+  // gắn event click
+  Array.from(resultsContainer.querySelectorAll('.search-result-item')).forEach(item => {
+    item.addEventListener('click', function() {
+      const lat = parseFloat(this.dataset.lat), lng = parseFloat(this.dataset.lng);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        map.setView([lat, lng], 10);
+        resultsContainer.style.display = 'none';
+      }
+    });
+  });
+}
     </script>
-  </body>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
 </html>
