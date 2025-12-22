@@ -1,1 +1,648 @@
-hello
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FloodSim</title>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-geosearch@3.0.0/dist/geosearch.css"
+    />
+    <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/bundle.min.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
+
+      .info-panel {
+        font-family: "Segoe UI", Arial, sans-serif;
+        min-width: 320px;
+      }
+      .sim-btn {
+        background: #d9534f;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        width: 100%;
+        cursor: pointer;
+        margin-top: 10px;
+        font-weight: bold;
+        border-radius: 4px;
+        transition: 0.3s;
+      }
+      .sim-btn:hover {
+        background: #c9302c;
+      }
+
+      .loading-text {
+        color: #666;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      select {
+        width: 100%;
+        padding: 5px;
+        margin-top: 5px;
+        border: 1px solid #0044ff;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+
+      /* CSS cho cảnh báo lịch sử */
+      .history-alert {
+        margin-top: 5px;
+        padding: 8px;
+        border-left: 4px solid;
+        font-size: 12px;
+        border-radius: 4px;
+      }
+      .alert-danger {
+        background: #fff2f0;
+        border-color: red;
+      }
+      .alert-safe {
+        background: #f6ffed;
+        border-color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script>
+      // Định nghĩa phạm vi Việt Nam
+      var vietnamBounds = L.latLngBounds(
+        [8.0, 102.0], // Tây Nam
+        [23.5, 110.0] // Đông Bắc
+      );
+
+      // Tạo bản đồ với phạm vi giới hạn
+      var map = L.map("map", {
+        center: [16.0, 106.0],
+        zoom: 6,
+        maxBounds: vietnamBounds,
+        maxZoom: 18,
+        minZoom: 6,
+      });
+
+      // Sử dụng OpenStreetMap làm nền bản đồ
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+        noWrap: true, // Ngăn không load các tile ngoài Việt Nam
+        bounds: vietnamBounds,
+      }).addTo(map);
+
+      // Thêm layer tên địa phương
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "",
+        maxZoom: 18,
+        noWrap: true,
+        bounds: vietnamBounds,
+      }).addTo(map);
+
+      // 1. DATA: DANH SÁCH 40 ĐẬP (Rút gọn demo vài cái chính)
+      var danhSachDap = [
+        {
+          id: 1,
+          ten: "Thủy điện Lai Châu",
+          vido: 22.385,
+          kinhdo: 102.793,
+          loai: "Lớn",
+          thuongNguon: "Biên giới TQ",
+        },
+        {
+          id: 2,
+          ten: "Thủy điện Sơn La",
+          vido: 21.4939,
+          kinhdo: 103.9822,
+          loai: "Lớn",
+          thuongNguon: "TĐ Lai Châu",
+        },
+        {
+          id: 3,
+          ten: "Thủy điện Hòa Bình",
+          vido: 20.8146,
+          kinhdo: 105.3373,
+          loai: "Lớn",
+          thuongNguon: "TĐ Sơn La",
+        },
+        {
+          id: 4,
+          ten: "Thủy điện Thác Bà",
+          vido: 21.7569,
+          kinhdo: 105.0569,
+          loai: "Lớn",
+          thuongNguon: "Sông Chảy",
+        },
+        {
+          id: 5,
+          ten: "Thủy điện Tuyên Quang",
+          vido: 22.1833,
+          kinhdo: 105.25,
+          loai: "Lớn",
+          thuongNguon: "Sông Gâm",
+        },
+        {
+          id: 6,
+          ten: "Thủy điện Bản Vẽ",
+          vido: 19.05,
+          kinhdo: 104.65,
+          loai: "Lớn",
+          thuongNguon: "Sông Cả",
+        },
+        {
+          id: 7,
+          ten: "Thủy điện Sông Tranh 2",
+          vido: 15.3833,
+          kinhdo: 108.1833,
+          loai: "Vừa",
+          thuongNguon: "Sông Tranh",
+        },
+        {
+          id: 8,
+          ten: "Thủy điện A Vương",
+          vido: 15.7667,
+          kinhdo: 107.8,
+          loai: "Vừa",
+          thuongNguon: "Sông A Vương",
+        },
+        {
+          id: 9,
+          ten: "Thủy điện Đồng Nai 3",
+          vido: 11.9667,
+          kinhdo: 108.2833,
+          loai: "Vừa",
+          thuongNguon: "Sông Đồng Nai",
+        },
+        {
+          id: 10,
+          ten: "Thủy điện Đồng Nai 4",
+          vido: 11.8167,
+          kinhdo: 108.1667,
+          loai: "Vừa",
+          thuongNguon: "Sông Đồng Nai",
+        },
+        {
+          id: 11,
+          ten: "Hồ Thác Bà",
+          vido: 21.7569,
+          kinhdo: 105.0569,
+          loai: "Hồ",
+          thuongNguon: "Sông Chảy",
+        },
+        {
+          id: 12,
+          ten: "Hồ Sông Cầu",
+          vido: 21.2833,
+          kinhdo: 105.85,
+          loai: "Hồ",
+          thuongNguon: "Sông Cầu",
+        },
+        {
+          id: 13,
+          ten: "Hồ Kẻ Gỗ (Hà Tĩnh)",
+          vido: 18.2333,
+          kinhdo: 105.95,
+          loai: "Hồ",
+          thuongNguon: "Sông Rào Cái",
+        },
+        {
+          id: 14,
+          ten: "Thủy điện Bình Điền",
+          vido: 16.3667,
+          kinhdo: 107.7333,
+          loai: "Vừa",
+          thuongNguon: "Sông Bồ",
+        },
+        {
+          id: 15,
+          ten: "Thủy điện Hương Điền",
+          vido: 16.483,
+          kinhdo: 107.452,
+          loai: "Vừa",
+          thuongNguon: "Sông Bồ",
+        },
+        {
+          id: 16,
+          ten: "Thủy điện Rào Quán",
+          vido: 16.8167,
+          kinhdo: 106.9667,
+          loai: "Vừa",
+          thuongNguon: "Sông Rào Quán",
+        },
+        {
+          id: 17,
+          ten: "Thủy điện Sêrêpốk 3",
+          vido: 12.6667,
+          kinhdo: 107.8333,
+          loai: "Vừa",
+          thuongNguon: "Sông Sêrêpốk",
+        },
+        {
+          id: 18,
+          ten: "Thủy điện Sêrêpốk 4",
+          vido: 12.5667,
+          kinhdo: 107.7667,
+          loai: "Vừa",
+          thuongNguon: "Sông Sêrêpốk",
+        },
+        {
+          id: 19,
+          ten: "Thủy điện Đắk Mi 4",
+          vido: 15.4667,
+          kinhdo: 107.8333,
+          loai: "Vừa",
+          thuongNguon: "Sông Đắk Mi",
+        },
+        {
+          id: 20,
+          ten: "Thủy điện Đắk Mi 3",
+          vido: 15.5167,
+          kinhdo: 107.9,
+          loai: "Vừa",
+          thuongNguon: "Sông Đắk Mi",
+        },
+        {
+          id: 21,
+          ten: "Thủy điện Krông H'Năng",
+          vido: 12.5,
+          kinhdo: 108.3333,
+          loai: "Vừa",
+          thuongNguon: "Sông Krông H'Năng",
+        },
+        {
+          id: 22,
+          ten: "Thủy điện Đắk Kar",
+          vido: 12.1667,
+          kinhdo: 108.5,
+          loai: "Vừa",
+          thuongNguon: "Sông Đắk Kar",
+        },
+        {
+          id: 23,
+          ten: "Thủy điện Đại Ninh",
+          vido: 11.5833,
+          kinhdo: 108.3333,
+          loai: "Vừa",
+          thuongNguon: "Sông Đa Nhim",
+        },
+        {
+          id: 24,
+          ten: "Thủy điện Hàm Thuận - Đa Mi",
+          vido: 11.25,
+          kinhdo: 108.0833,
+          loai: "Lớn",
+          thuongNguon: "Sông La Ngà",
+        },
+        {
+          id: 25,
+          ten: "Thủy điện Cần Đơn",
+          vido: 11.8333,
+          kinhdo: 106.8333,
+          loai: "Vừa",
+          thuongNguon: "Sông Bé",
+        },
+        {
+          id: 26,
+          ten: "Thủy điện Thác Mơ",
+          vido: 11.8333,
+          kinhdo: 107.0,
+          loai: "Vừa",
+          thuongNguon: "Sông Bé",
+        },
+        {
+          id: 27,
+          ten: "Thủy điện Srok Phu Miêng",
+          vido: 12.3333,
+          kinhdo: 107.1667,
+          loai: "Vừa",
+          thuongNguon: "Sông Srok Phu Miêng",
+        },
+        {
+          id: 28,
+          ten: "Thủy điện Đức Xuyên",
+          vido: 11.9167,
+          kinhdo: 107.5,
+          loai: "Vừa",
+          thuongNguon: "Sông Đồng Nai",
+        },
+        {
+          id: 29,
+          ten: "Thủy điện Đồng Nai 2",
+          vido: 11.75,
+          kinhdo: 108.0833,
+          loai: "Vừa",
+          thuongNguon: "Sông Đồng Nai",
+        },
+        {
+          id: 30,
+          ten: "Thủy điện Đắk R'Tíh",
+          vido: 12.0833,
+          kinhdo: 108.1667,
+          loai: "Vừa",
+          thuongNguon: "Sông Đắk R'Tíh",
+        },
+        {
+          id: 31,
+          ten: "Thủy điện Trị An",
+          vido: 11.127,
+          kinhdo: 107.085,
+          loai: "Lớn",
+          thuongNguon: "Sông Đồng Nai",
+        },
+        {
+          id: 32,
+          ten: "Thủy điện Vĩnh Sơn",
+          vido: 14.0833,
+          kinhdo: 108.75,
+          loai: "Vừa",
+          thuongNguon: "Sông Ba",
+        },
+        {
+          id: 33,
+          ten: "Thủy điện Sông Ba Hạ",
+          vido: 13.4167,
+          kinhdo: 108.8333,
+          loai: "Vừa",
+          thuongNguon: "Sông Ba",
+        },
+        {
+          id: 34,
+          ten: "Thủy điện Ayun Hạ",
+          vido: 13.5833,
+          kinhdo: 108.5,
+          loai: "Vừa",
+          thuongNguon: "Sông Ayun",
+        },
+        {
+          id: 35,
+          ten: "Thủy điện Ialy",
+          vido: 14.1667,
+          kinhdo: 107.8333,
+          loai: "Lớn",
+          thuongNguon: "Sông Sê San",
+        },
+        {
+          id: 36,
+          ten: "Thủy điện Sê San 3",
+          vido: 14.3333,
+          kinhdo: 107.8333,
+          loai: "Vừa",
+          thuongNguon: "Sông Sê San",
+        },
+        {
+          id: 37,
+          ten: "Thủy điện Sê San 3A",
+          vido: 14.25,
+          kinhdo: 107.75,
+          loai: "Vừa",
+          thuongNguon: "Sông Sê San",
+        },
+        {
+          id: 38,
+          ten: "Thủy điện Plei Krông",
+          vido: 14.5833,
+          kinhdo: 107.9167,
+          loai: "Vừa",
+          thuongNguon: "Sông Sê San",
+        },
+        {
+          id: 39,
+          ten: "Thủy điện Sông Hinh",
+          vido: 12.8333,
+          kinhdo: 108.9167,
+          loai: "Vừa",
+          thuongNguon: "Sông Ba",
+        },
+        {
+          id: 40,
+          ten: "Hồ Dầu Tiếng",
+          vido: 11.3619,
+          kinhdo: 106.3458,
+          loai: "Hồ",
+          thuongNguon: "Sông Sài Gòn",
+        },
+      ];
+
+      // 2. DATA: DANH SÁCH ĐEN (Vùng hay ngập)
+      var vungNguyHiem = [
+        "Thừa Thiên Huế",
+        "Quảng Trị",
+        "Quảng Bình",
+        "Hà Tĩnh",
+        "Nghệ An",
+        "Quảng Nam",
+        "Phú Yên",
+        "Khánh Hoà",
+        "Bình Định",
+      ];
+
+      // Vẽ Marker lên bản đồ
+      danhSachDap.forEach((dap) => {
+        var color =
+          dap.loai === "Lớn" ? "red" : dap.loai === "Vừa" ? "orange" : "blue";
+        var size = dap.loai === "Lớn" ? 16 : 12;
+        var icon = L.divIcon({
+          className: "custom-div-icon",
+          html: `<div style='background:${color}; width:${size}px; height:${size}px; border-radius:50%; border:2px solid white; box-shadow:0 0 5px ${color};'></div>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+        L.marker([dap.vido, dap.kinhdo], { icon: icon })
+          .addTo(map)
+          .bindTooltip(dap.ten);
+        // Giảm bán kính vòng tròn để tránh chồng chéo
+        L.circle([dap.vido, dap.kinhdo], {
+          color: "blue",
+          fillOpacity: 0.05,
+          radius: 1000,
+        }).addTo(map);
+      });
+
+      var currentResults = null;
+      var selectedPoint = null;
+      window.currentTop3 = [];
+
+      // 3. API: LẤY ĐỘ CAO (Open-Meteo)
+      async function getDoCao(lat, lng) {
+        try {
+          const res = await fetch(
+            `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`
+          );
+          const data = await res.json();
+          return data.elevation[0];
+        } catch (e) {
+          return 5;
+        } // Mất mạng trả về 5m
+      }
+
+      // 4. API: LẤY TÊN TỈNH (BigDataCloud) - Để check lịch sử
+      async function getTenTinh(lat, lng) {
+        try {
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=vi`
+          );
+          const data = await res.json();
+          return data.principalSubdivision || "Không xác định";
+        } catch (e) {
+          return "Không xác định";
+        }
+      }
+
+      // 5. LOGIC: TÍNH TOÁN
+      function tinhToan(dist, doCao) {
+        var heSo = 1 + doCao / 3;
+        return Math.round((500 + dist * 0.2) * heSo);
+      }
+
+      // 6. SỰ KIỆN CLICK (Tích hợp tất cả)
+      map.on("click", async function (e) {
+        selectedPoint = e.latlng;
+        L.popup()
+          .setLatLng(e.latlng)
+          .setContent(
+            "<div class='loading-text'>⏳ Đang phân tích dữ liệu đa nguồn...</div>"
+          )
+          .openOn(map);
+        if (currentResults) {
+          map.removeLayer(currentResults.marker);
+          map.removeLayer(currentResults.circle);
+        }
+
+        // A. Tìm 3 đập gần nhất
+        var daps = danhSachDap.map((d) => {
+          return {
+            ...d,
+            dist: L.latLng(d.vido, d.kinhdo).distanceTo(e.latlng),
+          };
+        });
+        daps.sort((a, b) => a.dist - b.dist);
+        window.currentTop3 = daps.slice(0, 3);
+        var dapGanNhat = window.currentTop3[0];
+
+        // B. Gọi 2 API cùng lúc (Độ cao + Tên tỉnh)
+        var doCao = await getDoCao(e.latlng.lat, e.latlng.lng);
+        var tenTinh = await getTenTinh(e.latlng.lat, e.latlng.lng);
+
+        // C. Check Lịch sử ngập
+        var htmlCanhBao = "";
+        if (vungNguyHiem.some((v) => tenTinh.includes(v))) {
+          htmlCanhBao = `<div class="history-alert alert-danger">⚠️ <b>CẢNH BÁO LỊCH SỬ:</b><br>${tenTinh} là vùng thường xuyên ngập lụt.</div>`;
+        } else {
+          htmlCanhBao = `<div class="history-alert alert-safe">✅ <b>LỊCH SỬ AN TOÀN:</b><br>${tenTinh} ít ghi nhận ngập nghiêm trọng.</div>`;
+        }
+
+        // D. Hiển thị Popup
+        var nguong = tinhToan(dapGanNhat.dist, doCao);
+        var options = window.currentTop3
+          .map(
+            (d) =>
+              `<option value="${d.id}">${d.ten} (${(d.dist / 1000).toFixed(
+                1
+              )} km)</option>`
+          )
+          .join("");
+
+        var popupHTML = `
+                <div class="info-panel">
+                    <h3 style="margin:0; color:#0044ff; border-bottom:2px solid #ddd;">Phân Tích Đa Nguồn</h3>
+                    ${htmlCanhBao} <div style="margin-top:10px;">
+                        <label style="font-size:12px; font-weight:bold;">Nguồn xả lũ giả lập:</label>
+                        <select id="selectDap" onchange="doiDap(this.value, ${doCao})">${options}</select>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px; font-size:13px">
+                        <div style="background:#f5f5f5; padding:5px;">⛰️ Độ cao: <b>${doCao}m</b></div>
+                        <div style="background:#eeffee; padding:5px;">🛡️ Ngưỡng: <b id="lblNguong" style="color:green">${nguong.toLocaleString()}</b></div>
+                    </div>
+
+                    <div style="background:#fff0f0; padding:10px; margin-top:10px; border:1px solid #ffccc7;">
+                        <label><b>Xả lũ (m³/s):</b></label>
+                        <input type="number" id="inpXa" value="${
+                          nguong + 500
+                        }" style="width:100%; padding:5px; margin-top:5px;">
+                        <button class="sim-btn" onclick="chaySim(${doCao})">CHẠY MÔ PHỎNG</button>
+                    </div>
+                </div>
+            `;
+        L.popup().setLatLng(e.latlng).setContent(popupHTML).openOn(map);
+      });
+
+      // Hỗ trợ đổi đập
+      window.doiDap = function (id, doCao) {
+        var dap = window.currentTop3.find((d) => d.id == id);
+        var nguong = tinhToan(dap.dist, doCao);
+        document.getElementById("lblNguong").innerText =
+          nguong.toLocaleString();
+        document.getElementById("inpXa").value = nguong + 500;
+      };
+
+      // Chạy mô phỏng
+      window.chaySim = function (doCao) {
+        var id = document.getElementById("selectDap").value;
+        var val = parseFloat(document.getElementById("inpXa").value);
+        var dap = window.currentTop3.find((d) => d.id == id);
+        var nguong = tinhToan(dap.dist, doCao);
+
+        map.closePopup();
+
+        var color = val > nguong ? "red" : "green";
+        var text = val > nguong ? "CẢNH BÁO NGẬP" : "AN TOÀN";
+        var radius = val > nguong ? (val - nguong) * 2 : 300;
+        if (radius > 50000) radius = 50000;
+        if (radius < 300) radius = 300;
+
+        // Hiện bán kính
+        var txtRadius =
+          radius >= 1000
+            ? (radius / 1000).toFixed(1) + " km"
+            : radius.toFixed(0) + " m";
+
+        var marker = L.marker([selectedPoint.lat, selectedPoint.lng])
+          .addTo(map)
+          .bindPopup(
+            `<b style="color:${color}">${text}</b><br>Nguồn: ${dap.ten}<br>Phạm vi: ${txtRadius}`
+          )
+          .openPopup();
+
+        var circle = L.circle([selectedPoint.lat, selectedPoint.lng], {
+          color: color,
+          fillColor: color,
+          fillOpacity: 0.5,
+          radius: radius,
+        }).addTo(map);
+
+        currentResults = { marker: marker, circle: circle };
+        map.flyTo(selectedPoint, 11);
+      };
+
+      // Giới hạn bản đồ chỉ hiển thị Việt Nam
+      map.setMaxBounds(vietnamBounds);
+
+      //Thêm thanh tìm kiếm
+      const searchControl = new GeoSearch.GeoSearchControl({
+        provider: new GeoSearch.OpenStreetMapProvider(),
+        style: "bar",
+        searchLabel: "Tìm kiếm địa điểm tại Việt Nam...",
+        autoClose: true,
+      });
+      map.addControl(searchControl);
+    </script>
+  </body>
+</html>
