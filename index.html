@@ -24,8 +24,8 @@
 
     /* Map container */
     #map {
-      flex: 10;
-      height: 120vh;
+      flex: 1;
+      height: 100vh;
     }
 
     /* Legend panel on the right */
@@ -530,17 +530,20 @@
         CHÚ THÍCH BẢN ĐỒ
       </div>
 
-      <div class="legend-item" style="border-left-color: #ff0000">
-        <div class="legend-color" style="background: #ff0000"></div>
+      <div class="legend-item" style="border-left-color: #33ebff; cursor: pointer;"
+        onclick="toggleDamLayer('large', this)">
+        <div class="legend-color" style="background: #33ffee"></div>
         <div class="legend-text">Thủy điện lớn (>100MW)</div>
       </div>
 
-      <div class="legend-item" style="border-left-color: #ff9900">
+      <div class="legend-item" style="border-left-color: #ff9900; cursor: pointer;"
+        onclick="toggleDamLayer('medium', this)">
         <div class="legend-color" style="background: #ff9900"></div>
         <div class="legend-text">Thủy điện vừa (30-100MW)</div>
       </div>
 
-      <div class="legend-item" style="border-left-color: #0066ff">
+      <div class="legend-item" style="border-left-color: #0066ff; cursor: pointer;"
+        onclick="toggleDamLayer('reservoir', this)">
         <div class="legend-color" style="background: #0066ff"></div>
         <div class="legend-text">Hồ chứa nước & đập</div>
       </div>
@@ -550,8 +553,8 @@
         <div class="legend-text">Vùng an toàn (ít ngập)</div>
       </div>
 
-      <div class="legend-item" style="border-left-color: #33ebff">
-        <div class="legend-color" style="background: #33ffee"></div>
+      <div class="legend-item" style="border-left-color: #ff0000; cursor: pointer;" onclick="toggleDangerLayer(this)">
+        <div class="legend-color" style="background: #ff0000"></div>
         <div class="legend-text">Vùng nguy hiểm (thường xuyên ngập)</div>
       </div>
 
@@ -597,13 +600,13 @@
         <i class="fas fa-info-circle"></i>
         HƯỚNG DẪN SỬ DỤNG
       </div>
-
       <div class="instruction-content">
-        <p><strong>1.</strong> Nhấn vào bản đồ để chọn vị trí phân tích</p>
-        <p><strong>2.</strong> Hệ thống tự động tìm 3 đập gần nhất</p>
-        <p><strong>3.</strong> Chọn đập để mô phỏng xả lũ</p>
-        <p><strong>4.</strong> Nhập lưu lượng xả và chạy mô phỏng</p>
-        <p><strong>5.</strong> Xem kết quả cảnh báo trên bản đồ</p>
+        <p><strong>1.</strong> Nhấn vào chú thích bản đồ để xem vị trí các vùng</p>
+        <p><strong>2.</strong> Nhấn vào bản đồ để chọn vị trí phân tích</p>
+        <p><strong>3.</strong> Hệ thống tự động tìm 3 đập gần nhất</p>
+        <p><strong>4.</strong> Chọn đập để mô phỏng xả lũ</p>
+        <p><strong>5.</strong> Nhập lưu lượng xả và chạy mô phỏng</p>
+        <p><strong>6.</strong> Xem kết quả cảnh báo trên bản đồ</p>
       </div>
     </div>
 
@@ -652,7 +655,7 @@
       center: [16.0, 106.0],
       zoom: 6,
       maxBounds: vietnamBounds,
-      maxZoom: 18,
+      maxZoom: 20,
       minZoom: 6,
     });
 
@@ -660,7 +663,7 @@
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | FloodSim',
-      maxZoom: 18,
+      maxZoom: 20,
       noWrap: true,
       bounds: vietnamBounds,
     }).addTo(map);
@@ -1079,23 +1082,40 @@
       "Bình Định",
     ];
 
-    // Vẽ các đập lên bản đồ
+    // Khởi tạo các layer group và trạng thái
+    var damLayers = {
+      large: L.layerGroup(),
+      medium: L.layerGroup(),
+      reservoir: L.layerGroup()
+    };
+    var damStates = { large: false, medium: false, reservoir: false };
+
+    // Phân loại đập vào các layer (chưa hiển thị ngay)
     danhSachDap.forEach(function (dap) {
-      var color = '#0066ff'; // Mặc định: Hồ (Xanh)
-      if (dap.loai === 'Lớn') color = '#ff0000'; // Đỏ
-      else if (dap.loai === 'Vừa') color = '#ff9900'; // Cam
+      var color = '#0066ff';
+      var targetLayer = damLayers.reservoir;
+
+      if (dap.loai === 'Lớn') { color = '#33ebff'; targetLayer = damLayers.large; }
+      else if (dap.loai === 'Vừa') { color = '#ff9900'; targetLayer = damLayers.medium; }
 
       L.circleMarker([dap.vido, dap.kinhdo], {
-        radius: 8,
-        fillColor: color,
-        color: "#fff",
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.9
-      })
-        .bindPopup("<b>" + dap.ten + "</b><br>Loại: " + dap.loai + "<br>Nguồn: " + dap.thuongNguon)
-        .addTo(map);
+        radius: 8, fillColor: color, color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
+      }).bindPopup("<b>" + dap.ten + "</b><br>Loại: " + dap.loai + "<br>Nguồn: " + dap.thuongNguon)
+        .addTo(targetLayer);
     });
+
+    // Hàm bật/tắt layer đập
+    function toggleDamLayer(type, element) {
+      if (damStates[type]) {
+        map.removeLayer(damLayers[type]);
+        element.style.backgroundColor = "#f8faff";
+        damStates[type] = false;
+      } else {
+        map.addLayer(damLayers[type]);
+        element.style.backgroundColor = "#e0f7fa";
+        damStates[type] = true;
+      }
+    }
 
     // Hoàn chỉnh: hàm tìm kiếm (gọi bởi nút Tìm)
     function performSearch() {
@@ -1165,6 +1185,44 @@
           }
         });
       });
+    }
+
+    // Xử lý hiển thị vùng nguy hiểm khi click vào chú thích
+    var dangerLayer = L.layerGroup();
+    var isDangerLayerVisible = false;
+
+    function toggleDangerLayer(element) {
+      if (isDangerLayerVisible) {
+        map.removeLayer(dangerLayer);
+        element.style.backgroundColor = "#f8faff"; // Trả về màu nền gốc
+        isDangerLayerVisible = false;
+      } else {
+        dangerLayer.clearLayers();
+
+        // Hàm chuẩn hóa chuỗi để so sánh tên tỉnh (xử lý dấu tiếng Việt khác nhau)
+        function normalizeStr(str) {
+          return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d");
+        }
+
+        vungNguyHiem.forEach(function (areaName) {
+          var province = vietnamProvinces.find(function (p) {
+            return normalizeStr(p.name) === normalizeStr(areaName);
+          });
+
+          if (province) {
+            L.circle([province.lat, province.lng], {
+              color: '#ff0000',
+              fillColor: '#ff0000',
+              fillOpacity: 0.5,
+              radius: 25000 // Bán kính 25km mô phỏng vùng ảnh hưởng
+            }).bindPopup("<b>" + province.name + "</b><br>Khu vực nguy cơ ngập cao").addTo(dangerLayer);
+          }
+        });
+
+        dangerLayer.addTo(map);
+        element.style.backgroundColor = "#e0f7fa"; // Highlight khi active
+        isDangerLayerVisible = true;
+      }
     }
   </script>
 </body>
