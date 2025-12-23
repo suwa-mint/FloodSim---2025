@@ -491,9 +491,6 @@
   <!-- Custom search container -->
   <div class="search-container">
     <div class="search-box">
-      <div class="search-icon">
-        <i class="fas fa-search"></i>
-      </div>
       <input type="text" class="search-input" id="searchInput"
         placeholder="Nhập tỉnh thành, thành phố hoặc địa điểm tại Việt Nam..." autocomplete="off" />
       <button class="search-button" onclick="performSearch()">
@@ -1125,9 +1122,7 @@
       const resultsContainer = document.getElementById("searchResults");
 
       if (!q) {
-        resultsContainer.innerHTML =
-          '<div class="no-results">Vui lòng nhập từ khóa tìm kiếm</div>';
-        resultsContainer.style.display = "block";
+        resultsContainer.style.display = "none";
         return;
       }
 
@@ -1186,6 +1181,13 @@
         });
       });
     }
+
+    // Tự động ẩn kết quả khi xóa nội dung
+    document.getElementById("searchInput").addEventListener("input", function () {
+      if (!this.value.trim()) {
+        document.getElementById("searchResults").style.display = "none";
+      }
+    });
 
     // Xử lý hiển thị vùng nguy hiểm khi click vào chú thích
     var dangerLayer = L.layerGroup();
