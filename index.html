@@ -2,12 +2,12 @@
 <html lang="vi">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FloodSim</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -22,13 +22,12 @@
       overflow: hidden;
     }
 
-    /* Map container */
     #map {
       flex: 1;
       height: 100vh;
     }
 
-    /* Legend panel on the right */
+    /* Legend Panel */
     .legend-panel {
       width: 350px;
       background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
@@ -38,7 +37,6 @@
       padding: 20px;
       z-index: 1000;
       display: none;
-      /* Ẩn bảng chú thích mặc định để bản đồ full màn hình */
     }
 
     .panel-header {
@@ -65,15 +63,14 @@
       font-weight: 500;
     }
 
-    /* Search box */
+    /* Search Box */
     .search-container {
       position: absolute;
       top: 20px;
       left: 50%;
       transform: translateX(-40%);
       width: 500px;
-      /* Thay đổi giá trị này để chỉnh độ rộng (ví dụ: 500px, 800px) */
-      max-width: 100%;
+      max-width: 80%;
       z-index: 1000;
     }
 
@@ -92,16 +89,6 @@
       transform: translateY(-2px);
     }
 
-    .search-icon {
-      padding: 0 20px;
-      background: linear-gradient(135deg, #0044ff 0%, #0066ff 100%);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-
     .search-input {
       flex: 1;
       padding: 18px 20px;
@@ -110,11 +97,6 @@
       font-size: 16px;
       color: #333;
       background: transparent;
-    }
-
-    .search-input::placeholder {
-      color: #999;
-      font-weight: 500;
     }
 
     .search-button {
@@ -163,34 +145,7 @@
       transform: translateX(5px);
     }
 
-    .search-result-item i {
-      color: #0044ff;
-      font-size: 18px;
-      width: 24px;
-      text-align: center;
-    }
-
-    .result-title {
-      font-weight: 600;
-      color: #0044ff;
-      margin-bottom: 5px;
-      font-size: 15px;
-    }
-
-    .result-subtitle {
-      font-size: 13px;
-      color: #666;
-    }
-
-    .no-results {
-      padding: 30px;
-      text-align: center;
-      color: #888;
-      font-style: italic;
-      font-size: 15px;
-    }
-
-    /* Legend sections */
+    /* Legend Sections */
     .legend-section {
       margin-bottom: 25px;
       padding: 20px;
@@ -212,11 +167,6 @@
       border-bottom: 2px solid #e0e6ff;
     }
 
-    .section-title i {
-      font-size: 18px;
-    }
-
-    /* Legend items */
     .legend-item {
       display: flex;
       align-items: center;
@@ -226,6 +176,7 @@
       border-radius: 8px;
       border-left: 4px solid;
       transition: all 0.2s;
+      cursor: pointer;
     }
 
     .legend-item:hover {
@@ -279,72 +230,11 @@
       font-weight: 500;
     }
 
-    /* Info panel styling */
-    .info-panel {
-      min-width: 350px;
-      padding: 15px;
-    }
-
-    .sim-btn {
-      background: linear-gradient(135deg, #d9534f 0%, #c9302c 100%);
-      color: white;
-      border: none;
-      padding: 14px 20px;
-      width: 100%;
-      cursor: pointer;
-      margin-top: 15px;
-      font-weight: 600;
-      border-radius: 8px;
-      transition: all 0.3s;
-      font-size: 15px;
-      box-shadow: 0 4px 15px rgba(217, 83, 79, 0.3);
-    }
-
-    .sim-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4);
-      background: linear-gradient(135deg, #c9302c 0%, #b92b28 100%);
-    }
-
-    .history-alert {
-      margin-top: 15px;
-      padding: 15px;
-      border-left: 5px solid;
-      font-size: 14px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      line-height: 1.5;
-    }
-
-    .alert-danger {
-      background: linear-gradient(135deg, #fff2f0 0%, #ffe6e3 100%);
-      border-color: #d9534f;
-    }
-
-    .alert-safe {
-      background: linear-gradient(135deg, #f6ffed 0%, #e8f5df 100%);
-      border-color: #52c41a;
-    }
-
-    select {
-      width: 100%;
-      padding: 12px 15px;
-      margin-top: 10px;
-      border: 2px solid #0044ff;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-      background: #f8faff;
-      color: #333;
-      cursor: pointer;
-    }
-
-    /* Toggle button */
+    /* Toggle Button */
     .legend-toggle {
       position: absolute;
       top: 20px;
       right: 20px;
-      /* Dời nút sang phải vì bảng đã ẩn */
       background: linear-gradient(135deg, #0044ff 0%, #0066ff 100%);
       color: white;
       border: none;
@@ -371,50 +261,53 @@
       .legend-panel {
         width: 300px;
       }
-
-      .legend-toggle {
-        right: 320px;
-      }
     }
 
     @media (max-width: 768px) {
       body {
-        flex-direction: column;
+        display: block;
       }
 
       .legend-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
         width: 100%;
-        height: 400px;
+        height: 60vh;
         border-left: none;
         border-top: 3px solid #0044ff;
-        order: 2;
+        z-index: 2000;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
       }
 
       #map {
-        order: 1;
-        height: calc(100vh - 400px);
+        height: 100vh;
       }
 
       .search-container {
-        width: 95%;
-        top: 10px;
+        width: 90%;
+        top: 15px;
       }
 
       .search-box {
-        border-radius: 15px;
+        border-radius: 25px;
       }
 
       .search-input {
-        padding: 15px;
+        padding: 12px 15px;
         font-size: 14px;
       }
 
       .legend-toggle {
-        display: none;
+        display: flex;
+        top: auto;
+        bottom: 30px;
+        right: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
       }
     }
 
-    /* Scrollbar styling */
+    /* Scrollbar */
     .legend-panel::-webkit-scrollbar {
       width: 6px;
     }
@@ -429,27 +322,7 @@
       border-radius: 3px;
     }
 
-    /* Loading animation */
-    .loading-text {
-      color: #666;
-      font-style: italic;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 20px;
-      font-size: 15px;
-    }
-
-    .loading-text::after {
-      content: "";
-      width: 20px;
-      height: 20px;
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #0044ff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
+    /* Animation */
     @keyframes spin {
       0% {
         transform: rotate(0deg);
@@ -459,118 +332,69 @@
         transform: rotate(360deg);
       }
     }
-
-    /* Refactored styles from inline */
-    .instruction-content {
-      font-size: 13px;
-      color: #555;
-      line-height: 1.5;
-    }
-
-    .panel-footer {
-      text-align: center;
-      margin-top: 20px;
-      padding-top: 15px;
-      border-top: 1px solid #e0e6ff;
-    }
-
-    .footer-note {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 5px;
-    }
-
-    .footer-copy {
-      font-size: 11px;
-      color: #aaa;
-    }
   </style>
 </head>
 
 <body>
-  <!-- Custom search container -->
+  <!-- Search -->
   <div class="search-container">
     <div class="search-box">
       <input type="text" class="search-input" id="searchInput"
-        placeholder="Nhập tỉnh thành, thành phố hoặc địa điểm tại Việt Nam..." autocomplete="off" />
+        placeholder="Nhập tỉnh thành, thành phố hoặc địa điểm tại Việt Nam..." autocomplete="off">
       <button class="search-button" onclick="performSearch()">
-        <i class="fas fa-search"></i>
-        Tìm
+        <i class="fas fa-search"></i>Tìm
       </button>
     </div>
     <div class="search-results" id="searchResults"></div>
   </div>
 
-  <!-- Toggle button for legend -->
+  <!-- Legend Toggle -->
   <button class="legend-toggle" id="legendToggle">
-    <i class="fas fa-layer-group"></i>
-    Hiện chú thích
+    <i class="fas fa-layer-group"></i>Hiện chú thích
   </button>
 
   <!-- Map -->
   <div id="map"></div>
 
-  <!-- Legend panel on the right -->
+  <!-- Legend Panel -->
   <div class="legend-panel" id="legendPanel">
     <div class="panel-header">
-      <div class="panel-title">
-        <i class="fas fa-water"></i>
-        FLOODSIM
-      </div>
+      <div class="panel-title"><i class="fas fa-water"></i>FLOODSIM</div>
       <div class="panel-subtitle">Hệ thống cảnh báo ngập lụt thông minh</div>
     </div>
 
-    <!-- Legend section -->
+    <!-- Legend Section -->
     <div class="legend-section">
-      <div class="section-title">
-        <i class="fas fa-map-marker-alt"></i>
-        CHÚ THÍCH BẢN ĐỒ
-      </div>
-
-      <div class="legend-item" style="border-left-color: #33ebff; cursor: pointer;"
-        onclick="toggleDamLayer('large', this)">
+      <div class="section-title"><i class="fas fa-map-marker-alt"></i>CHÚ THÍCH BẢN ĐỒ</div>
+      <div class="legend-item" style="border-left-color: #33ebff;" onclick="toggleDamLayer('large', this)">
         <div class="legend-color" style="background: #33ffee"></div>
         <div class="legend-text">Thủy điện lớn (>100MW)</div>
       </div>
-
-      <div class="legend-item" style="border-left-color: #ff9900; cursor: pointer;"
-        onclick="toggleDamLayer('medium', this)">
+      <div class="legend-item" style="border-left-color: #ff9900;" onclick="toggleDamLayer('medium', this)">
         <div class="legend-color" style="background: #ff9900"></div>
         <div class="legend-text">Thủy điện vừa (30-100MW)</div>
       </div>
-
-      <div class="legend-item" style="border-left-color: #0066ff; cursor: pointer;"
-        onclick="toggleDamLayer('reservoir', this)">
+      <div class="legend-item" style="border-left-color: #0066ff;" onclick="toggleDamLayer('reservoir', this)">
         <div class="legend-color" style="background: #0066ff"></div>
-        <div class="legend-text">Hồ chứa nước & đập</div>
+        <div class="legend-text">Hồ chứa nước và đập</div>
       </div>
-
       <div class="legend-item" style="border-left-color: #33cc33">
         <div class="legend-color" style="background: #33cc33"></div>
         <div class="legend-text">Vùng an toàn (ít ngập)</div>
       </div>
-
-      <div class="legend-item" style="border-left-color: #ff0000; cursor: pointer;" onclick="toggleDangerLayer(this)">
+      <div class="legend-item" style="border-left-color: #ff0000;" onclick="toggleDangerLayer(this)">
         <div class="legend-color" style="background: #ff0000"></div>
         <div class="legend-text">Vùng nguy hiểm (thường xuyên ngập)</div>
       </div>
-
       <div class="legend-item" style="border-left-color: #800080">
-        <div class="legend-color" style="
-              background: rgba(128, 0, 128, 0.3);
-              border: 2px solid #800080;
-            "></div>
+        <div class="legend-color" style="background: rgba(128,0,128,0.3); border: 2px solid #800080;"></div>
         <div class="legend-text">Khu vực ảnh hưởng xả lũ</div>
       </div>
     </div>
 
-    <!-- Statistics section -->
+    <!-- Statistics Section -->
     <div class="legend-section">
-      <div class="section-title">
-        <i class="fas fa-chart-bar"></i>
-        THỐNG KÊ HỆ THỐNG
-      </div>
-
+      <div class="section-title"><i class="fas fa-chart-bar"></i>THỐNG KÊ HỆ THỐNG</div>
       <div class="stats-grid">
         <div class="stat-item">
           <div class="stat-value" id="totalDams">40</div>
@@ -593,11 +417,8 @@
 
     <!-- Instructions -->
     <div class="legend-section">
-      <div class="section-title">
-        <i class="fas fa-info-circle"></i>
-        HƯỚNG DẪN SỬ DỤNG
-      </div>
-      <div class="instruction-content">
+      <div class="section-title"><i class="fas fa-info-circle"></i>HƯỚNG DẪN SỬ DỤNG</div>
+      <div style="font-size:13px;color:#555;line-height:1.5">
         <p><strong>1.</strong> Nhấn vào chú thích bản đồ để xem vị trí các vùng</p>
         <p><strong>2.</strong> Nhấn vào bản đồ để chọn vị trí phân tích</p>
         <p><strong>3.</strong> Hệ thống tự động tìm 3 đập gần nhất</p>
@@ -608,396 +429,214 @@
     </div>
 
     <!-- Footer -->
-    <div class="panel-footer">
-      <div class="footer-note">Dữ liệu cập nhật đến tháng 12/2025</div>
-      <div class="footer-copy">&copy; 2025 FloodSim Project</div>
+    <div style="text-align:center;margin-top:20px;padding-top:15px;border-top:1px solid #e0e6ff">
+      <div style="font-size:12px;color:#888;margin-bottom:5px">Dữ liệu cập nhật đến tháng 12/2025</div>
+      <div style="font-size:11px;color:#aaa">&copy; 2025 FloodSim</div>
     </div>
   </div>
 
   <script>
-    // Variables
-    let legendVisible = false; /* Đặt trạng thái ban đầu là false (đang ẩn) */
+    // ========== CONFIGURATION ==========
+    const CONFIG = {
+      vietnamBounds: [[6, 80], [25, 200]],
+      mapCenter: [16.0, 106.0],
+      zoom: 6,
+      dangerousAreas: [
+        "Thừa Thiên Huế", "Quảng Trị", "Quảng Bình", "Hà Tĩnh", "Nghệ An",
+        "Quảng Nam", "Phú Yên", "Khánh Hoà", "Bình Định"
+      ]
+    };
 
-    // Toggle legend panel
-    document
-      .getElementById("legendToggle")
-      .addEventListener("click", function () {
-        const legendPanel = document.getElementById("legendPanel");
-        const toggleBtn = document.getElementById("legendToggle");
+    // ========== GLOBAL VARIABLES ==========
+    let map, legendVisible = false;
+    let damLayers = { large: L.layerGroup(), medium: L.layerGroup(), reservoir: L.layerGroup() };
+    let damStates = { large: false, medium: false, reservoir: false };
+    let dangerLayer = L.layerGroup(), isDangerLayerVisible = false;
 
-        if (legendVisible) {
-          legendPanel.style.display = "none";
-          toggleBtn.innerHTML =
-            '<i class="fas fa-layer-group"></i> Hiện chú thích';
-          toggleBtn.style.right = "20px";
-        } else {
-          legendPanel.style.display = "block";
-          toggleBtn.innerHTML =
-            '<i class="fas fa-layer-group"></i> Chú thích';
-          toggleBtn.style.right = "370px";
-          if (window.innerWidth <= 1200) {
-            toggleBtn.style.right = "320px";
-          }
-        }
-        legendVisible = !legendVisible;
+    // ========== INITIALIZATION ==========
+    function initializeMap() {
+      map = L.map("map", {
+        center: CONFIG.mapCenter,
+        zoom: CONFIG.zoom,
+        maxBounds: L.latLngBounds(CONFIG.vietnamBounds),
+        maxZoom: 20,
+        minZoom: 6,
       });
 
-    // Initialize map
-    var vietnamBounds = L.latLngBounds(
-      [6, 80], // Tây Nam
-      [25, 200] // Đông Bắc
-    );
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | FloodSim',
+        maxZoom: 20,
+        noWrap: true,
+        bounds: CONFIG.vietnamBounds,
+      }).addTo(map);
+    }
 
-    var map = L.map("map", {
-      center: [16.0, 106.0],
-      zoom: 6,
-      maxBounds: vietnamBounds,
-      maxZoom: 20,
-      minZoom: 6,
-    });
+    function initializeDams() {
+      DANH_SACH_DAP.forEach(dap => {
+        let color = '#0066ff', targetLayer = damLayers.reservoir;
+        if (dap.loai === 'Lớn') { color = '#33ebff'; targetLayer = damLayers.large; }
+        else if (dap.loai === 'Vừa') { color = '#ff9900'; targetLayer = damLayers.medium; }
 
-    // Add OpenStreetMap tiles
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | FloodSim',
-      maxZoom: 20,
-      noWrap: true,
-      bounds: vietnamBounds,
-    }).addTo(map);
+        L.circleMarker([dap.vido, dap.kinhdo], {
+          radius: 8, fillColor: color, color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
+        }).bindPopup(`<b>${dap.ten}</b><br>Loại: ${dap.loai}<br>Nguồn: ${dap.thuongNguon}`)
+          .addTo(targetLayer);
+      });
+    }
 
-    // 1. DATA: DANH SÁCH 40 ĐẬP (Rút gọn demo vài cái chính)
-    var danhSachDap = [
-      {
-        id: 1,
-        ten: "Thủy điện Lai Châu",
-        vido: 22.385,
-        kinhdo: 102.793,
-        loai: "Lớn",
-        thuongNguon: "Biên giới TQ",
-      },
-      {
-        id: 2,
-        ten: "Thủy điện Sơn La",
-        vido: 21.4939,
-        kinhdo: 103.9822,
-        loai: "Lớn",
-        thuongNguon: "TĐ Lai Châu",
-      },
-      {
-        id: 3,
-        ten: "Thủy điện Hòa Bình",
-        vido: 20.8146,
-        kinhdo: 105.3373,
-        loai: "Lớn",
-        thuongNguon: "TĐ Sơn La",
-      },
-      {
-        id: 4,
-        ten: "Thủy điện Thác Bà",
-        vido: 21.7569,
-        kinhdo: 105.0569,
-        loai: "Lớn",
-        thuongNguon: "Sông Chảy",
-      },
-      {
-        id: 5,
-        ten: "Thủy điện Tuyên Quang",
-        vido: 22.1833,
-        kinhdo: 105.25,
-        loai: "Lớn",
-        thuongNguon: "Sông Gâm",
-      },
-      {
-        id: 6,
-        ten: "Thủy điện Bản Vẽ",
-        vido: 19.05,
-        kinhdo: 104.65,
-        loai: "Lớn",
-        thuongNguon: "Sông Cả",
-      },
-      {
-        id: 7,
-        ten: "Thủy điện Sông Tranh 2",
-        vido: 15.3833,
-        kinhdo: 108.1833,
-        loai: "Vừa",
-        thuongNguon: "Sông Tranh",
-      },
-      {
-        id: 8,
-        ten: "Thủy điện A Vương",
-        vido: 15.7667,
-        kinhdo: 107.8,
-        loai: "Vừa",
-        thuongNguon: "Sông A Vương",
-      },
-      {
-        id: 9,
-        ten: "Thủy điện Đồng Nai 3",
-        vido: 11.9667,
-        kinhdo: 108.2833,
-        loai: "Vừa",
-        thuongNguon: "Sông Đồng Nai",
-      },
-      {
-        id: 10,
-        ten: "Thủy điện Đồng Nai 4",
-        vido: 11.8167,
-        kinhdo: 108.1667,
-        loai: "Vừa",
-        thuongNguon: "Sông Đồng Nai",
-      },
-      {
-        id: 11,
-        ten: "Hồ Thác Bà",
-        vido: 21.7569,
-        kinhdo: 105.0569,
-        loai: "Hồ",
-        thuongNguon: "Sông Chảy",
-      },
-      {
-        id: 12,
-        ten: "Hồ Sông Cầu",
-        vido: 21.2833,
-        kinhdo: 105.85,
-        loai: "Hồ",
-        thuongNguon: "Sông Cầu",
-      },
-      {
-        id: 13,
-        ten: "Hồ Kẻ Gỗ (Hà Tĩnh)",
-        vido: 18.2333,
-        kinhdo: 105.95,
-        loai: "Hồ",
-        thuongNguon: "Sông Rào Cái",
-      },
-      {
-        id: 14,
-        ten: "Thủy điện Bình Điền",
-        vido: 16.3667,
-        kinhdo: 107.7333,
-        loai: "Vừa",
-        thuongNguon: "Sông Bồ",
-      },
-      {
-        id: 15,
-        ten: "Thủy điện Hương Điền",
-        vido: 16.483,
-        kinhdo: 107.452,
-        loai: "Vừa",
-        thuongNguon: "Sông Bồ",
-      },
-      {
-        id: 16,
-        ten: "Thủy điện Rào Quán",
-        vido: 16.8167,
-        kinhdo: 106.9667,
-        loai: "Vừa",
-        thuongNguon: "Sông Rào Quán",
-      },
-      {
-        id: 17,
-        ten: "Thủy điện Sêrêpốk 3",
-        vido: 12.6667,
-        kinhdo: 107.8333,
-        loai: "Vừa",
-        thuongNguon: "Sông Sêrêpốk",
-      },
-      {
-        id: 18,
-        ten: "Thủy điện Sêrêpốk 4",
-        vido: 12.5667,
-        kinhdo: 107.7667,
-        loai: "Vừa",
-        thuongNguon: "Sông Sêrêpốk",
-      },
-      {
-        id: 19,
-        ten: "Thủy điện Đắk Mi 4",
-        vido: 15.4667,
-        kinhdo: 107.8333,
-        loai: "Vừa",
-        thuongNguon: "Sông Đắk Mi",
-      },
-      {
-        id: 20,
-        ten: "Thủy điện Đắk Mi 3",
-        vido: 15.5167,
-        kinhdo: 107.9,
-        loai: "Vừa",
-        thuongNguon: "Sông Đắk Mi",
-      },
-      {
-        id: 21,
-        ten: "Thủy điện Krông H'Năng",
-        vido: 12.5,
-        kinhdo: 108.3333,
-        loai: "Vừa",
-        thuongNguon: "Sông Krông H'Năng",
-      },
-      {
-        id: 22,
-        ten: "Thủy điện Đắk Kar",
-        vido: 12.1667,
-        kinhdo: 108.5,
-        loai: "Vừa",
-        thuongNguon: "Sông Đắk Kar",
-      },
-      {
-        id: 23,
-        ten: "Thủy điện Đại Ninh",
-        vido: 11.5833,
-        kinhdo: 108.3333,
-        loai: "Vừa",
-        thuongNguon: "Sông Đa Nhim",
-      },
-      {
-        id: 24,
-        ten: "Thủy điện Hàm Thuận - Đa Mi",
-        vido: 11.25,
-        kinhdo: 108.0833,
-        loai: "Lớn",
-        thuongNguon: "Sông La Ngà",
-      },
-      {
-        id: 25,
-        ten: "Thủy điện Cần Đơn",
-        vido: 11.8333,
-        kinhdo: 106.8333,
-        loai: "Vừa",
-        thuongNguon: "Sông Bé",
-      },
-      {
-        id: 26,
-        ten: "Thủy điện Thác Mơ",
-        vido: 11.8333,
-        kinhdo: 107.0,
-        loai: "Vừa",
-        thuongNguon: "Sông Bé",
-      },
-      {
-        id: 27,
-        ten: "Thủy điện Srok Phu Miêng",
-        vido: 12.3333,
-        kinhdo: 107.1667,
-        loai: "Vừa",
-        thuongNguon: "Sông Srok Phu Miêng",
-      },
-      {
-        id: 28,
-        ten: "Thủy điện Đức Xuyên",
-        vido: 11.9167,
-        kinhdo: 107.5,
-        loai: "Vừa",
-        thuongNguon: "Sông Đồng Nai",
-      },
-      {
-        id: 29,
-        ten: "Thủy điện Đồng Nai 2",
-        vido: 11.75,
-        kinhdo: 108.0833,
-        loai: "Vừa",
-        thuongNguon: "Sông Đồng Nai",
-      },
-      {
-        id: 30,
-        ten: "Thủy điện Đắk R'Tíh",
-        vido: 12.0833,
-        kinhdo: 108.1667,
-        loai: "Vừa",
-        thuongNguon: "Sông Đắk R'Tíh",
-      },
-      {
-        id: 31,
-        ten: "Thủy điện Trị An",
-        vido: 11.127,
-        kinhdo: 107.085,
-        loai: "Lớn",
-        thuongNguon: "Sông Đồng Nai",
-      },
-      {
-        id: 32,
-        ten: "Thủy điện Vĩnh Sơn",
-        vido: 14.0833,
-        kinhdo: 108.75,
-        loai: "Vừa",
-        thuongNguon: "Sông Ba",
-      },
-      {
-        id: 33,
-        ten: "Thủy điện Sông Ba Hạ",
-        vido: 13.4167,
-        kinhdo: 108.8333,
-        loai: "Vừa",
-        thuongNguon: "Sông Ba",
-      },
-      {
-        id: 34,
-        ten: "Thủy điện Ayun Hạ",
-        vido: 13.5833,
-        kinhdo: 108.5,
-        loai: "Vừa",
-        thuongNguon: "Sông Ayun",
-      },
-      {
-        id: 35,
-        ten: "Thủy điện Ialy",
-        vido: 14.1667,
-        kinhdo: 107.8333,
-        loai: "Lớn",
-        thuongNguon: "Sông Sê San",
-      },
-      {
-        id: 36,
-        ten: "Thủy điện Sê San 3",
-        vido: 14.3333,
-        kinhdo: 107.8333,
-        loai: "Vừa",
-        thuongNguon: "Sông Sê San",
-      },
-      {
-        id: 37,
-        ten: "Thủy điện Sê San 3A",
-        vido: 14.25,
-        kinhdo: 107.75,
-        loai: "Vừa",
-        thuongNguon: "Sông Sê San",
-      },
-      {
-        id: 38,
-        ten: "Thủy điện Plei Krông",
-        vido: 14.5833,
-        kinhdo: 107.9167,
-        loai: "Vừa",
-        thuongNguon: "Sông Sê San",
-      },
-      {
-        id: 39,
-        ten: "Thủy điện Sông Hinh",
-        vido: 12.8333,
-        kinhdo: 108.9167,
-        loai: "Vừa",
-        thuongNguon: "Sông Ba",
-      },
-      {
-        id: 40,
-        ten: "Hồ Dầu Tiếng",
-        vido: 11.3619,
-        kinhdo: 106.3458,
-        loai: "Hồ",
-        thuongNguon: "Sông Sài Gòn",
-      },
+    // ========== UI CONTROLS ==========
+    function toggleLegendPanel() {
+      const panel = document.getElementById("legendPanel");
+      const toggleBtn = document.getElementById("legendToggle");
+      const isMobile = window.innerWidth <= 768;
+
+      if (legendVisible) {
+        panel.style.display = "none";
+        toggleBtn.innerHTML = '<i class="fas fa-layer-group"></i> Hiện chú thích';
+        if (!isMobile) toggleBtn.style.right = "20px";
+      } else {
+        panel.style.display = "block";
+        toggleBtn.innerHTML = '<i class="fas fa-times"></i> Đóng';
+        if (!isMobile) toggleBtn.style.right = window.innerWidth <= 1200 ? "320px" : "370px";
+      }
+      legendVisible = !legendVisible;
+    }
+
+    function toggleDamLayer(type, element) {
+      if (damStates[type]) {
+        map.removeLayer(damLayers[type]);
+        element.style.backgroundColor = "#f8faff";
+      } else {
+        map.addLayer(damLayers[type]);
+        element.style.backgroundColor = "#e0f7fa";
+      }
+      damStates[type] = !damStates[type];
+    }
+
+    function toggleDangerLayer(element) {
+      if (isDangerLayerVisible) {
+        map.removeLayer(dangerLayer);
+        element.style.backgroundColor = "#f8faff";
+      } else {
+        dangerLayer.clearLayers();
+        CONFIG.dangerousAreas.forEach(areaName => {
+          const province = VIETNAM_PROVINCES.find(p => normalizeString(p.name) === normalizeString(areaName));
+          if (province) {
+            L.circle([province.lat, province.lng], {
+              color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.5, radius: 25000
+            }).bindPopup(`<b>${province.name}</b><br>Khu vực nguy cơ ngập cao`).addTo(dangerLayer);
+          }
+        });
+        map.addLayer(dangerLayer);
+        element.style.backgroundColor = "#e0f7fa";
+      }
+      isDangerLayerVisible = !isDangerLayerVisible;
+    }
+
+    // ========== SEARCH FUNCTIONALITY ==========
+    function performSearch() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      const results = document.getElementById("searchResults");
+
+      if (!query) {
+        results.style.display = "none";
+        return;
+      }
+
+      const provResults = VIETNAM_PROVINCES.filter(p => p.name.toLowerCase().includes(query));
+      const damResults = DANH_SACH_DAP.filter(d =>
+        d.ten.toLowerCase().includes(query) ||
+        d.thuongNguon.toLowerCase().includes(query)
+      );
+
+      let html = "";
+      if (provResults.length) {
+        html += '<div style="padding:8px 12px;"><strong>Kết quả tỉnh/thành phố:</strong></div>';
+        provResults.forEach(p => {
+          html += `<div class="search-result-item" data-lat="${p.lat}" data-lng="${p.lng}">
+                               <i class="fas fa-map-marker-alt"></i>
+                               <div><div class="result-title">${p.name}</div><div class="result-subtitle">Loại: ${p.type}</div></div>
+                             </div>`;
+        });
+      }
+      if (damResults.length) {
+        html += '<div style="padding:8px 12px;"><strong>Kết quả thủy điện:</strong></div>';
+        damResults.forEach(d => {
+          html += `<div class="search-result-item" data-lat="${d.vido}" data-lng="${d.kinhdo}">
+                               <i class="fas fa-water"></i>
+                               <div><div class="result-title">${d.ten}</div><div class="result-subtitle">${d.thuongNguon || ""}</div></div>
+                             </div>`;
+        });
+      }
+      if (!html) html = '<div class="no-results">Không tìm thấy kết quả phù hợp</div>';
+
+      results.innerHTML = html;
+      results.style.display = "block";
+
+      // Attach click events
+      results.querySelectorAll(".search-result-item").forEach(item => {
+        item.addEventListener("click", function () {
+          const lat = parseFloat(this.dataset.lat), lng = parseFloat(this.dataset.lng);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            map.setView([lat, lng], 10);
+            results.style.display = "none";
+          }
+        });
+      });
+    }
+
+    // ========== UTILITY FUNCTIONS ==========
+    function normalizeString(str) {
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d");
+    }
+
+    // ========== DATA ==========
+    const DANH_SACH_DAP = [
+      { id: 1, ten: "Thủy điện Lai Châu", vido: 22.385, kinhdo: 102.793, loai: "Lớn", thuongNguon: "Biên giới TQ" },
+      { id: 2, ten: "Thủy điện Sơn La", vido: 21.4939, kinhdo: 103.9822, loai: "Lớn", thuongNguon: "TĐ Lai Châu" },
+      { id: 3, ten: "Thủy điện Hòa Bình", vido: 20.8146, kinhdo: 105.3373, loai: "Lớn", thuongNguon: "TĐ Sơn La" },
+      { id: 4, ten: "Thủy điện Thác Bà", vido: 21.7569, kinhdo: 105.0569, loai: "Lớn", thuongNguon: "Sông Chảy" },
+      { id: 5, ten: "Thủy điện Tuyên Quang", vido: 22.1833, kinhdo: 105.25, loai: "Lớn", thuongNguon: "Sông Gâm" },
+      { id: 6, ten: "Thủy điện Bản Vẽ", vido: 19.05, kinhdo: 104.65, loai: "Lớn", thuongNguon: "Sông Cả" },
+      { id: 7, ten: "Thủy điện Sông Tranh 2", vido: 15.3833, kinhdo: 108.1833, loai: "Vừa", thuongNguon: "Sông Tranh" },
+      { id: 8, ten: "Thủy điện A Vương", vido: 15.7667, kinhdo: 107.8, loai: "Vừa", thuongNguon: "Sông A Vương" },
+      { id: 9, ten: "Thủy điện Đồng Nai 3", vido: 11.9667, kinhdo: 108.2833, loai: "Vừa", thuongNguon: "Sông Đồng Nai" },
+      { id: 10, ten: "Thủy điện Đồng Nai 4", vido: 11.8167, kinhdo: 108.1667, loai: "Vừa", thuongNguon: "Sông Đồng Nai" },
+      { id: 11, ten: "Hồ Thác Bà", vido: 21.7569, kinhdo: 105.0569, loai: "Hồ", thuongNguon: "Sông Chảy" },
+      { id: 12, ten: "Hồ Sông Cầu", vido: 21.2833, kinhdo: 105.85, loai: "Hồ", thuongNguon: "Sông Cầu" },
+      { id: 13, ten: "Hồ Kẻ Gỗ (Hà Tĩnh)", vido: 18.2333, kinhdo: 105.95, loai: "Hồ", thuongNguon: "Sông Rào Cái" },
+      { id: 14, ten: "Thủy điện Bình Điền", vido: 16.3667, kinhdo: 107.7333, loai: "Vừa", thuongNguon: "Sông Bồ" },
+      { id: 15, ten: "Thủy điện Hương Điền", vido: 16.483, kinhdo: 107.452, loai: "Vừa", thuongNguon: "Sông Bồ" },
+      { id: 16, ten: "Thủy điện Rào Quán", vido: 16.8167, kinhdo: 106.9667, loai: "Vừa", thuongNguon: "Sông Rào Quán" },
+      { id: 17, ten: "Thủy điện Sêrêpốk 3", vido: 12.6667, kinhdo: 107.8333, loai: "Vừa", thuongNguon: "Sông Sêrêpốk" },
+      { id: 18, ten: "Thủy điện Sêrêpốk 4", vido: 12.5667, kinhdo: 107.7667, loai: "Vừa", thuongNguon: "Sông Sêrêpốk" },
+      { id: 19, ten: "Thủy điện Đắk Mi 4", vido: 15.4667, kinhdo: 107.8333, loai: "Vừa", thuongNguon: "Sông Đắk Mi" },
+      { id: 20, ten: "Thủy điện Đắk Mi 3", vido: 15.5167, kinhdo: 107.9, loai: "Vừa", thuongNguon: "Sông Đắk Mi" },
+      { id: 21, ten: "Thủy điện Krông H'Năng", vido: 12.5, kinhdo: 108.3333, loai: "Vừa", thuongNguon: "Sông Krông H'Năng" },
+      { id: 22, ten: "Thủy điện Đắk Kar", vido: 12.1667, kinhdo: 108.5, loai: "Vừa", thuongNguon: "Sông Đắk Kar" },
+      { id: 23, ten: "Thủy điện Đại Ninh", vido: 11.5833, kinhdo: 108.3333, loai: "Vừa", thuongNguon: "Sông Đa Nhim" },
+      { id: 24, ten: "Thủy điện Hàm Thuận - Đa Mi", vido: 11.25, kinhdo: 108.0833, loai: "Lớn", thuongNguon: "Sông La Ngà" },
+      { id: 25, ten: "Thủy điện Cần Đơn", vido: 11.8333, kinhdo: 106.8333, loai: "Vừa", thuongNguon: "Sông Bé" },
+      { id: 26, ten: "Thủy điện Thác Mơ", vido: 11.8333, kinhdo: 107.0, loai: "Vừa", thuongNguon: "Sông Bé" },
+      { id: 27, ten: "Thủy điện Srok Phu Miêng", vido: 12.3333, kinhdo: 107.1667, loai: "Vừa", thuongNguon: "Sông Srok Phu Miêng" },
+      { id: 28, ten: "Thủy điện Đức Xuyên", vido: 11.9167, kinhdo: 107.5, loai: "Vừa", thuongNguon: "Sông Đồng Nai" },
+      { id: 29, ten: "Thủy điện Đồng Nai 2", vido: 11.75, kinhdo: 108.0833, loai: "Vừa", thuongNguon: "Sông Đồng Nai" },
+      { id: 30, ten: "Thủy điện Đắk R'Tíh", vido: 12.0833, kinhdo: 108.1667, loai: "Vừa", thuongNguon: "Sông Đắk R'Tíh" },
+      { id: 31, ten: "Thủy điện Trị An", vido: 11.127, kinhdo: 107.085, loai: "Lớn", thuongNguon: "Sông Đồng Nai" },
+      { id: 32, ten: "Thủy điện Vĩnh Sơn", vido: 14.0833, kinhdo: 108.75, loai: "Vừa", thuongNguon: "Sông Ba" },
+      { id: 33, ten: "Thủy điện Sông Ba Hạ", vido: 13.4167, kinhdo: 108.8333, loai: "Vừa", thuongNguon: "Sông Ba" },
+      { id: 34, ten: "Thủy điện Ayun Hạ", vido: 13.5833, kinhdo: 108.5, loai: "Vừa", thuongNguon: "Sông Ayun" },
+      { id: 35, ten: "Thủy điện Ialy", vido: 14.1667, kinhdo: 107.8333, loai: "Lớn", thuongNguon: "Sông Sê San" },
+      { id: 36, ten: "Thủy điện Sê San 3", vido: 14.3333, kinhdo: 107.8333, loai: "Vừa", thuongNguon: "Sông Sê San" },
+      { id: 37, ten: "Thủy điện Sê San 3A", vido: 14.25, kinhdo: 107.75, loai: "Vừa", thuongNguon: "Sông Sê San" },
+      { id: 38, ten: "Thủy điện Plei Krông", vido: 14.5833, kinhdo: 107.9167, loai: "Vừa", thuongNguon: "Sông Sê San" },
+      { id: 39, ten: "Thủy điện Sông Hinh", vido: 12.8333, kinhdo: 108.9167, loai: "Vừa", thuongNguon: "Sông Ba" },
+      { id: 40, ten: "Hồ Dầu Tiếng", vido: 11.3619, kinhdo: 106.3458, loai: "Hồ", thuongNguon: "Sông Sài Gòn" }
     ];
 
-    // DATA: Danh sách 63 Tỉnh Thành Việt Nam
-    var vietnamProvinces = [
+    const VIETNAM_PROVINCES = [
       { name: "An Giang", lat: 10.5216, lng: 105.1259, type: "Tỉnh" },
-      {
-        name: "Bà Rịa - Vũng Tàu",
-        lat: 10.4963,
-        lng: 107.1685,
-        type: "Tỉnh",
-      },
+      { name: "Bà Rịa - Vũng Tàu", lat: 10.4963, lng: 107.1685, type: "Tỉnh" },
       { name: "Bạc Liêu", lat: 9.2922, lng: 105.7244, type: "Tỉnh" },
       { name: "Bắc Giang", lat: 21.2731, lng: 106.1946, type: "Tỉnh" },
       { name: "Bắc Kạn", lat: 22.147, lng: 105.8348, type: "Tỉnh" },
@@ -1053,179 +692,23 @@
       { name: "Thanh Hóa", lat: 19.8, lng: 105.7667, type: "Tỉnh" },
       { name: "Thừa Thiên Huế", lat: 16.4667, lng: 107.6, type: "Tỉnh" },
       { name: "Tiền Giang", lat: 10.4167, lng: 106.35, type: "Tỉnh" },
-      {
-        name: "TP. Hồ Chí Minh",
-        lat: 10.8231,
-        lng: 106.6297,
-        type: "Thành phố",
-      },
+      { name: "TP. Hồ Chí Minh", lat: 10.8231, lng: 106.6297, type: "Thành phố" },
       { name: "Trà Vinh", lat: 9.9333, lng: 106.3333, type: "Tỉnh" },
       { name: "Tuyên Quang", lat: 21.8167, lng: 105.2167, type: "Tỉnh" },
       { name: "Vĩnh Long", lat: 10.25, lng: 105.9667, type: "Tỉnh" },
       { name: "Vĩnh Phúc", lat: 21.3, lng: 105.6, type: "Tỉnh" },
-      { name: "Yên Bái", lat: 21.7167, lng: 104.8833, type: "Tỉnh" },
+      { name: "Yên Bái", lat: 21.7167, lng: 104.8833, type: "Tỉnh" }
     ];
 
-    // Dangerous areas
-    var vungNguyHiem = [
-      "Thừa Thiên Huế",
-      "Quảng Trị",
-      "Quảng Bình",
-      "Hà Tĩnh",
-      "Nghệ An",
-      "Quảng Nam",
-      "Phú Yên",
-      "Khánh Hoà",
-      "Bình Định",
-    ];
-
-    // Khởi tạo các layer group và trạng thái
-    var damLayers = {
-      large: L.layerGroup(),
-      medium: L.layerGroup(),
-      reservoir: L.layerGroup()
-    };
-    var damStates = { large: false, medium: false, reservoir: false };
-
-    // Phân loại đập vào các layer (chưa hiển thị ngay)
-    danhSachDap.forEach(function (dap) {
-      var color = '#0066ff';
-      var targetLayer = damLayers.reservoir;
-
-      if (dap.loai === 'Lớn') { color = '#33ebff'; targetLayer = damLayers.large; }
-      else if (dap.loai === 'Vừa') { color = '#ff9900'; targetLayer = damLayers.medium; }
-
-      L.circleMarker([dap.vido, dap.kinhdo], {
-        radius: 8, fillColor: color, color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
-      }).bindPopup("<b>" + dap.ten + "</b><br>Loại: " + dap.loai + "<br>Nguồn: " + dap.thuongNguon)
-        .addTo(targetLayer);
-    });
-
-    // Hàm bật/tắt layer đập
-    function toggleDamLayer(type, element) {
-      if (damStates[type]) {
-        map.removeLayer(damLayers[type]);
-        element.style.backgroundColor = "#f8faff";
-        damStates[type] = false;
-      } else {
-        map.addLayer(damLayers[type]);
-        element.style.backgroundColor = "#e0f7fa";
-        damStates[type] = true;
-      }
-    }
-
-    // Hoàn chỉnh: hàm tìm kiếm (gọi bởi nút Tìm)
-    function performSearch() {
-      const q = (document.getElementById("searchInput").value || "")
-        .trim()
-        .toLowerCase();
-      const resultsContainer = document.getElementById("searchResults");
-
-      if (!q) {
-        resultsContainer.style.display = "none";
-        return;
-      }
-
-      const prov = (
-        typeof vietnamProvinces !== "undefined" ? vietnamProvinces : []
-      ).filter((p) => p.name.toLowerCase().includes(q));
-      const dams = (
-        typeof danhSachDap !== "undefined" ? danhSachDap : []
-      ).filter(
-        (d) =>
-          (d.ten && d.ten.toLowerCase().includes(q)) ||
-          (d.thuongNguon && d.thuongNguon.toLowerCase().includes(q))
-      );
-
-      let html = "";
-      if (prov.length) {
-        html +=
-          '<div style="padding:8px 12px;"><strong>Kết quả tỉnh/thành phố:</strong></div>';
-        prov.forEach((p) => {
-          html += `<div class="search-result-item" data-lat="${p.lat}" data-lng="${p.lng}">
-                 <i class="fas fa-map-marker-alt"></i>
-                 <div><div class="result-title">${p.name}</div><div class="result-subtitle">Loại: ${p.type}</div></div>
-               </div>`;
-        });
-      }
-      if (dams.length) {
-        html +=
-          '<div style="padding:8px 12px;"><strong>Kết quả thủy điện:</strong></div>';
-        dams.forEach((d) => {
-          html += `<div class="search-result-item" data-lat="${d.vido
-            }" data-lng="${d.kinhdo}">
-                 <i class="fas fa-water"></i>
-                 <div><div class="result-title">${d.ten
-            }</div><div class="result-subtitle">${d.thuongNguon || ""} • ${d.congSuat || "N/A"
-            }</div></div>
-               </div>`;
-        });
-      }
-      if (!html)
-        html = '<div class="no-results">Không tìm thấy kết quả phù hợp</div>';
-
-      resultsContainer.innerHTML = html;
-      resultsContainer.style.display = "block";
-
-      // gắn event click
-      Array.from(
-        resultsContainer.querySelectorAll(".search-result-item")
-      ).forEach((item) => {
-        item.addEventListener("click", function () {
-          const lat = parseFloat(this.dataset.lat),
-            lng = parseFloat(this.dataset.lng);
-          if (!isNaN(lat) && !isNaN(lng)) {
-            map.setView([lat, lng], 10);
-            resultsContainer.style.display = "none";
-          }
-        });
-      });
-    }
-
-    // Tự động ẩn kết quả khi xóa nội dung
+    // ========== EVENT LISTENERS ==========
+    document.getElementById("legendToggle").addEventListener("click", toggleLegendPanel);
     document.getElementById("searchInput").addEventListener("input", function () {
-      if (!this.value.trim()) {
-        document.getElementById("searchResults").style.display = "none";
-      }
+      if (!this.value.trim()) document.getElementById("searchResults").style.display = "none";
     });
 
-    // Xử lý hiển thị vùng nguy hiểm khi click vào chú thích
-    var dangerLayer = L.layerGroup();
-    var isDangerLayerVisible = false;
-
-    function toggleDangerLayer(element) {
-      if (isDangerLayerVisible) {
-        map.removeLayer(dangerLayer);
-        element.style.backgroundColor = "#f8faff"; // Trả về màu nền gốc
-        isDangerLayerVisible = false;
-      } else {
-        dangerLayer.clearLayers();
-
-        // Hàm chuẩn hóa chuỗi để so sánh tên tỉnh (xử lý dấu tiếng Việt khác nhau)
-        function normalizeStr(str) {
-          return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d");
-        }
-
-        vungNguyHiem.forEach(function (areaName) {
-          var province = vietnamProvinces.find(function (p) {
-            return normalizeStr(p.name) === normalizeStr(areaName);
-          });
-
-          if (province) {
-            L.circle([province.lat, province.lng], {
-              color: '#ff0000',
-              fillColor: '#ff0000',
-              fillOpacity: 0.5,
-              radius: 25000 // Bán kính 25km mô phỏng vùng ảnh hưởng
-            }).bindPopup("<b>" + province.name + "</b><br>Khu vực nguy cơ ngập cao").addTo(dangerLayer);
-          }
-        });
-
-        dangerLayer.addTo(map);
-        element.style.backgroundColor = "#e0f7fa"; // Highlight khi active
-        isDangerLayerVisible = true;
-      }
-    }
+    // ========== START APPLICATION ==========
+    initializeMap();
+    initializeDams();
   </script>
 </body>
 

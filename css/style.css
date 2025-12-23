@@ -1,1 +1,125 @@
 // day la file style.css
+/* day la file style.css */
+/* RESET CSS – đồng bộ hiển thị */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Layout tổng */
+body {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ================= MAP ================= */
+#map {
+  flex: 1;
+  height: 100vh;
+}
+
+/* ================= LEGEND PANEL ================= */
+.legend-panel {
+  width: 350px;
+  background: linear-gradient(135deg, #f5f7fa, #e4e8f0);
+  border-left: 3px solid #0044ff;
+  box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+  padding: 20px;
+  overflow-y: auto;
+  display: none;
+  z-index: 1000;
+}
+
+/* Header legend */
+.panel-header {
+  text-align: center;
+  border-bottom: 2px solid #0044ff;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.panel-title {
+  color: #0044ff;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ================= SEARCH ================= */
+.search-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-40%);
+  width: 500px;
+  z-index: 1000;
+}
+
+.search-box {
+  display: flex;
+  background: white;
+  border-radius: 50px;
+  border: 2px solid #0044ff;
+  box-shadow: 0 8px 30px rgba(0,68,255,0.2);
+}
+
+.search-input {
+  flex: 1;
+  padding: 18px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+.search-button {
+  background: linear-gradient(135deg,#0044ff,#0066ff);
+  color: white;
+  border: none;
+  padding: 0 30px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ================= LEGEND ITEMS ================= */
+.legend-section {
+  background: white;
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 12px;
+  border: 1px solid #e0e6ff;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  background: #f8faff;
+  padding: 12px;
+  border-left: 4px solid;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.legend-item:hover {
+  transform: translateX(5px);
+}
+
+/* ================= BUTTON TOGGLE ================= */
+.legend-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg,#0044ff,#0066ff);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 1000;
+}
