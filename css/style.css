@@ -27,15 +27,17 @@ body {
     display: flex;
     height: 100vh;
     overflow: hidden;
+    background: #f0f7ff;
 }
 
-/* Map */
+/* ========== MAP ========== */
 #map {
     flex: 1;
     height: 100vh;
+    z-index: 100;
 }
 
-/* Legend Panel */
+/* ========== LEGEND PANEL ========== */
 .legend-panel {
     width: 350px;
     background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
@@ -71,7 +73,7 @@ body {
     font-weight: 500;
 }
 
-/* Search Box */
+/* ========== SEARCH BOX ========== */
 .search-container {
     position: absolute;
     top: 20px;
@@ -185,7 +187,7 @@ body {
     font-size: 15px;
 }
 
-/* Legend Sections */
+/* ========== LEGEND SECTIONS ========== */
 .legend-section {
     margin-bottom: 25px;
     padding: 20px;
@@ -245,7 +247,7 @@ body {
     font-weight: 500;
 }
 
-/* Statistics */
+/* ========== STATISTICS ========== */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -274,7 +276,7 @@ body {
     font-weight: 500;
 }
 
-/* Instructions */
+/* ========== INSTRUCTIONS ========== */
 .instruction-content {
     font-size: 13px;
     color: #555;
@@ -285,7 +287,7 @@ body {
     margin-bottom: 8px;
 }
 
-/* Footer */
+/* ========== FOOTER ========== */
 .panel-footer {
     text-align: center;
     margin-top: 20px;
@@ -304,7 +306,7 @@ body {
     color: #aaa;
 }
 
-/* Toggle Button */
+/* ========== TOGGLE BUTTON ========== */
 .legend-toggle {
     position: absolute;
     top: 20px;
@@ -330,7 +332,190 @@ body {
     background: linear-gradient(135deg, #0033cc 0%, #0055cc 100%);
 }
 
-/* Scrollbar */
+/* ========== DAM MARKER STYLES ========== */
+/* Điều chỉnh màu sắc marker dựa trên loại đập */
+.dam-marker-large {
+    background-color: #33ebff !important;
+    border-color: #33ebff !important;
+}
+
+.dam-marker-medium {
+    background-color: #ff9900 !important;
+    border-color: #ff9900 !important;
+}
+
+.dam-marker-reservoir {
+    background-color: #0066ff !important;
+    border-color: #0066ff !important;
+}
+
+/* ========== DAM IMAGE POPUP ========== */
+.dam-popup-image {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 0 auto 12px auto;
+    display: block;
+    border: 2px solid #0044ff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dam-info {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    padding: 5px 0;
+}
+
+.dam-info strong {
+    color: #0044ff;
+    font-size: 15px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.dam-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    font-size: 13px;
+}
+
+.dam-info-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.dam-info-value {
+    color: #0044ff;
+    font-weight: 600;
+}
+
+/* ========== DAM DETAIL PANEL (HIỂN THỊ ẢNH LỚN) ========== */
+.dam-detail-panel {
+    position: absolute;
+    top: 80px;
+    right: 370px;
+    width: 320px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    border: 2px solid #0044ff;
+    z-index: 500;
+    display: none;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.dam-detail-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 2px solid #0044ff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.dam-detail-title {
+    font-size: 18px;
+    color: #0044ff;
+    margin-bottom: 12px;
+    font-weight: 600;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f7ff;
+}
+
+.dam-detail-info {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.6;
+}
+
+.dam-detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 5px 0;
+}
+
+.dam-detail-label {
+    color: #666;
+    font-weight: 500;
+    flex: 1;
+}
+
+.dam-detail-value {
+    color: #0044ff;
+    font-weight: 600;
+    flex: 1;
+    text-align: right;
+}
+
+.close-detail {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #0044ff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.close-detail:hover {
+    background: #0033cc;
+    transform: scale(1.1);
+}
+
+/* ========== DAM GALLERY (NẾU CÓ NHIỀU ẢNH) ========== */
+.dam-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.dam-gallery-item {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.dam-gallery-item:hover {
+    border-color: #0044ff;
+    transform: scale(1.05);
+}
+
+/* ========== SCROLLBAR ========== */
 .legend-panel::-webkit-scrollbar {
     width: 6px;
 }
@@ -345,7 +530,7 @@ body {
     border-radius: 3px;
 }
 
-/* Animation */
+/* ========== ANIMATION ========== */
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -355,7 +540,7 @@ body {
     }
 }
 
-/* Loading text */
+/* ========== LOADING TEXT ========== */
 .loading-text {
     color: #666;
     font-style: italic;
@@ -376,10 +561,14 @@ body {
     animation: spin 1s linear infinite;
 }
 
-/* Responsive */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 1200px) {
     .legend-panel {
         width: 300px;
+    }
+    .dam-detail-panel {
+        right: 320px;
+        width: 280px;
     }
 }
 
@@ -424,5 +613,18 @@ body {
         bottom: 30px;
         right: 20px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .dam-detail-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 320px;
+        max-height: 80vh;
+        overflow-y: auto;
+        right: auto;
+        z-index: 3000;
     }
 }
