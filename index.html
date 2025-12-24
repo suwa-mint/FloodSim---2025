@@ -4,17 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FloodSim - Hệ thống cảnh báo ngập lụt</title>
+  <title>FloodSim </title>
 
   <!-- Thư viện bên ngoài -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- File CSS của chúng ta -->
+  <!-- File CSS  -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Cấu hình hệ thống -->
   <script>
     // ========== CẤU HÌNH HỆ THỐNG ==========
     const CONFIG = {
@@ -156,21 +155,6 @@
     let dangerLayer = L.layerGroup();
     let isDangerLayerVisible = false;
 
-    // Dữ liệu tỉnh thành (demo chưa chính thức)
-    const VIETNAM_PROVINCES = [
-      { name: "Thừa Thiên Huế", type: "Tỉnh", lat: 16.4637, lng: 107.5909 },
-      { name: "Quảng Trị", type: "Tỉnh", lat: 16.8500, lng: 107.1000 },
-      { name: "Quảng Bình", type: "Tỉnh", lat: 17.4833, lng: 106.6000 },
-      { name: "Hà Tĩnh", type: "Tỉnh", lat: 18.3333, lng: 105.9000 },
-      { name: "Nghệ An", type: "Tỉnh", lat: 19.2500, lng: 104.8000 },
-      { name: "Quảng Nam", type: "Tỉnh", lat: 15.5667, lng: 107.9667 },
-      { name: "Phú Yên", type: "Tỉnh", lat: 13.0833, lng: 109.0833 },
-      { name: "Khánh Hoà", type: "Tỉnh", lat: 12.2500, lng: 109.1833 },
-      { name: "Bình Định", type: "Tỉnh", lat: 13.7833, lng: 109.2167 },
-      { name: "Hà Nội", type: "Thành phố", lat: 21.0285, lng: 105.8542 },
-      { name: "Hồ Chí Minh", type: "Thành phố", lat: 10.8231, lng: 106.6297 }
-    ];
-
     // ========== KHỞI TẠO BẢN ĐỒ ==========
     function initializeMap() {
       map = L.map("map", {
@@ -267,18 +251,28 @@
         element.style.backgroundColor = "#f8faff";
       } else {
         dangerLayer.clearLayers();
-        CONFIG.dangerousAreas.forEach(areaName => {
-          const province = VIETNAM_PROVINCES.find(
-            p => normalizeString(p.name) === normalizeString(areaName)
-          );
+        // Dữ liệu tọa độ các vùng nguy hiểm (đã xóa VIETNAM_PROVINCES)
+        const dangerCoords = {
+          "Thừa Thiên Huế": [16.4637, 107.5909],
+          "Quảng Trị": [16.8500, 107.1000],
+          "Quảng Bình": [17.4833, 106.6000],
+          "Hà Tĩnh": [18.3333, 105.9000],
+          "Nghệ An": [19.2500, 104.8000],
+          "Quảng Nam": [15.5667, 107.9667],
+          "Phú Yên": [13.0833, 109.0833],
+          "Khánh Hoà": [12.2500, 109.1833],
+          "Bình Định": [13.7833, 109.2167]
+        };
 
-          if (province) {
-            L.circle([province.lat, province.lng], {
+        CONFIG.dangerousAreas.forEach(areaName => {
+          const coords = dangerCoords[areaName];
+          if (coords) {
+            L.circle(coords, {
               color: '#ff0000',
               fillColor: '#ff0000',
               fillOpacity: 0.5,
               radius: 25000
-            }).bindPopup(`<b>${province.name}</b><br>Khu vực nguy cơ ngập cao`)
+            }).bindPopup(`<b>${areaName}</b><br>Khu vực nguy cơ ngập cao`)
               .addTo(dangerLayer);
           }
         });
@@ -289,7 +283,7 @@
     }
 
     // ========== CHỨC NĂNG TÌM KIẾM ==========
-    function performSearch() {
+    async function performSearch() {
       const query = document.getElementById("searchInput").value.trim();
       const results = document.getElementById("searchResults");
 
@@ -299,48 +293,48 @@
       }
 
       const normalizedQuery = normalizeString(query);
+      let html = "";
 
-      // Tìm tỉnh thành
-      const provResults = VIETNAM_PROVINCES.filter(p =>
-        normalizeString(p.name).includes(normalizedQuery)
-      );
-
-      // Tìm đập thủy điện
+      // Tìm đập thủy điện (Local)
       const damResults = listdap.filter(d =>
         normalizeString(d.ten).includes(normalizedQuery) ||
         normalizeString(d.song).includes(normalizedQuery)
       );
 
-      // Hiển thị kết quả
-      let html = "";
-      if (provResults.length > 0) {
-        html += '<div style="padding:8px 12px;"><strong>Tỉnh/thành phố:</strong></div>';
-        provResults.forEach(p => {
-          html += `
-  <div class="search-result-item" data-lat="${p.lat}" data-lng="${p.lng}">
-    <i class="fas fa-map-marker-alt"></i>
-    <div>
-      <div class="result-title">${p.name}</div>
-      <div class="result-subtitle">${p.type}</div>
-    </div>
-  </div>
-  `;
-        });
-      }
-
       if (damResults.length > 0) {
         html += '<div style="padding:8px 12px;"><strong>Thủy điện:</strong></div>';
         damResults.forEach(d => {
           html += `
-  <div class="search-result-item" data-lat="${d.lat}" data-lng="${d.lng}">
-    <i class="fas fa-water"></i>
-    <div>
-      <div class="result-title">${d.ten}</div>
-      <div class="result-subtitle">${d.song}</div>
-    </div>
-  </div>
-  `;
+            <div class="search-result-item" data-lat="${d.lat}" data-lng="${d.lng}">
+              <i class="fas fa-water"></i>
+              <div>
+                <div class="result-title">${d.ten}</div>
+                <div class="result-subtitle">${d.song}</div>
+              </div>
+            </div>`;
         });
+      }
+
+      // Tìm địa điểm qua OpenStreetMap (Remote)
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=5`);
+        const osmResults = await response.json();
+
+        if (osmResults.length > 0) {
+          html += '<div style="padding:8px 12px;"><strong>Địa điểm (OpenStreetMap):</strong></div>';
+          osmResults.forEach(p => {
+            html += `
+              <div class="search-result-item" data-lat="${p.lat}" data-lng="${p.lon}">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                  <div class="result-title">${p.display_name.split(',')[0]}</div>
+                  <div class="result-subtitle" style="font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">${p.display_name}</div>
+                </div>
+              </div>`;
+          });
+        }
+      } catch (e) {
+        console.error("Lỗi tìm kiếm OSM:", e);
       }
 
       if (!html) {
@@ -356,7 +350,7 @@
           const lat = parseFloat(this.dataset.lat);
           const lng = parseFloat(this.dataset.lng);
           if (!isNaN(lat) && !isNaN(lng)) {
-            map.setView([lat, lng], 10);
+            map.setView([lat, lng], 12);
             results.style.display = "none";
           }
         });
@@ -383,9 +377,7 @@
         document.getElementById('damDetailTitle').innerText = dap.ten;
         document.getElementById('damDetailInfo').innerHTML = `
           <p><strong>Sông:</strong> ${dap.song}</p>
-          <p><strong>Dung tích:</strong> ${dap.dung_tich} triệu m³</p>
-          <p><strong>Tọa độ:</strong> ${dap.lat}, ${dap.lng}</p>
-          <p><em>Dữ liệu được cập nhật từ hệ thống quan trắc quốc gia.</em></p>
+      
         `;
         document.getElementById('damDetailPanel').style.display = 'block';
       }
