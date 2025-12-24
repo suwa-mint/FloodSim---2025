@@ -1,6 +1,6 @@
 // day la file logic.js
 
-function Haversine(lat1, lon1, lat2, lon2){
+function Haversine(lat1, lon1, lat2, lon2) {
     const R = 6371; // Bán kính Trái Đất (km)
     const toRad = deg => deg * Math.PI / 180;
 
@@ -8,19 +8,21 @@ function Haversine(lat1, lon1, lat2, lon2){
     const dLon = toRad(lon2 - lon1);
 
     const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.sin(dLat / 2) ** 2 +
         Math.cos(toRad(lat1)) *
         Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        Math.sin(dLon / 2) ** 2;
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
 
-    return R * c;
+    // Làm tròn 3 chữ số thập phân
+    return Math.round(distance * 1000) / 1000;
 }
 /**
 Tìm ba đập gần nhất
  */
-function Threenearest(lat1, lon1) {
+function threeNearest(lat1, lon1) {
     // 1. Tạo bản sao danh sách và tính khoảng cách cho từng đập
     const distances = listdap.map(dap => {
         return {
