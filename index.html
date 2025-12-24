@@ -10,25 +10,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<!-- Panel hiển thị ảnh đập chi tiết -->
-<div class="dam-detail-panel" id="damDetailPanel">
-  <button class="close-detail" onclick="closeDamDetail()">&times;</button>
-  <img src="" alt="" class="dam-detail-image" id="damDetailImage">
-  <div class="dam-detail-title" id="damDetailTitle"></div>
-  <div class="dam-detail-info" id="damDetailInfo"></div>
-</div>
 
 <body>
   <!-- Search -->
   <div class="search-container">
-    <div class="search-box">
-      <input type="text" class="search-input" id="searchInput"
-        placeholder="Nhập tỉnh thành, thành phố hoặc địa điểm tại Việt Nam..." autocomplete="off">
-      <button class="search-button" onclick="performSearch()">
-        <i class="fas fa-search"></i>Tìm
-      </button>
-    </div>
-    <div class="search-results" id="searchResults"></div>
+    <!-- ... search content ... -->
   </div>
 
   <!-- Legend Toggle -->
@@ -41,84 +27,117 @@
 
   <!-- Legend Panel -->
   <div class="legend-panel" id="legendPanel">
-    <div class="panel-header">
-      <div class="panel-title"><i class="fas fa-water"></i>FLOODSIM</div>
-      <div class="panel-subtitle">Hệ thống cảnh báo ngập lụt thông minh</div>
-    </div>
-
-    <!-- Legend Section -->
-    <div class="legend-section">
-      <div class="section-title"><i class="fas fa-map-marker-alt"></i>CHÚ THÍCH BẢN ĐỒ</div>
-      <div class="legend-item" style="border-left-color: #33ebff;" onclick="toggleDamLayer('large', this)">
-        <div class="legend-color" style="background: #33ffee"></div>
-        <div class="legend-text">Thủy điện lớn (>100MW)</div>
-      </div>
-      <div class="legend-item" style="border-left-color: #ff9900;" onclick="toggleDamLayer('medium', this)">
-        <div class="legend-color" style="background: #ff9900"></div>
-        <div class="legend-text">Thủy điện vừa (30-100MW)</div>
-      </div>
-      <div class="legend-item" style="border-left-color: #0066ff;" onclick="toggleDamLayer('reservoir', this)">
-        <div class="legend-color" style="background: #0066ff"></div>
-        <div class="legend-text">Hồ chứa nước và đập</div>
-      </div>
-      <div class="legend-item" style="border-left-color: #33cc33">
-        <div class="legend-color" style="background: #33cc33"></div>
-        <div class="legend-text">Vùng an toàn (ít ngập)</div>
-      </div>
-      <div class="legend-item" style="border-left-color: #ff0000;" onclick="toggleDangerLayer(this)">
-        <div class="legend-color" style="background: #ff0000"></div>
-        <div class="legend-text">Vùng nguy hiểm (thường xuyên ngập)</div>
-      </div>
-      <div class="legend-item" style="border-left-color: #800080">
-        <div class="legend-color" style="background: rgba(128,0,128,0.3); border: 2px solid #800080;"></div>
-        <div class="legend-text">Khu vực ảnh hưởng xả lũ</div>
-      </div>
-    </div>
-
-    <!-- Statistics Section -->
-    <div class="legend-section">
-      <div class="section-title"><i class="fas fa-chart-bar"></i>THỐNG KÊ HỆ THỐNG</div>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-value" id="totalDams">40</div>
-          <div class="stat-label">Công trình thủy điện</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="dangerAreas">9</div>
-          <div class="stat-label">Tỉnh nguy hiểm</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="largeDams">12</div>
-          <div class="stat-label">Thủy điện lớn</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="mediumDams">25</div>
-          <div class="stat-label">Thủy điện vừa</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Instructions -->
-    <div class="legend-section">
-      <div class="section-title"><i class="fas fa-info-circle"></i>HƯỚNG DẪN SỬ DỤNG</div>
-      <div class="instruction-content">
-        <p><strong>1.</strong> Nhấn vào chú thích bản đồ để xem vị trí </p>
-        <p><strong>2.</strong> Nhấn vào bản đồ để chọn vị trí phân tích</p>
-        <p><strong>3.</strong> Hệ thống tự động tìm 3 đập gần nhất</p>
-        <p><strong>4.</strong> Chọn đập để mô phỏng xả lũ</p>
-        <p><strong>5.</strong> Nhập lưu lượng xả và chạy mô phỏng</p>
-        <p><strong>6.</strong> Xem kết quả cảnh báo trên bản đồ</p>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="panel-footer">
-      <div class="footer-note">Dữ liệu cập nhật đến tháng 12/2025</div>
-      <div class="footer-copy">&copy; 2025 FloodSim</div>
-    </div>
+    <!-- ... legend content ... -->
   </div>
 
-  <script src="app.js"></script>
-</body>
+  <!-- Dam Detail Panel -->
+  <div class="dam-detail-panel" id="damDetailPanel">
+    <!-- ... dam detail content ... -->
+
+    <body>
+      <!-- Search -->
+      <div class="search-container">
+        <div class="search-box">
+          <input type="text" class="search-input" id="searchInput"
+            placeholder="Nhập tỉnh thành, thành phố hoặc địa điểm tại Việt Nam..." autocomplete="off">
+          <button class="search-button" onclick="performSearch()">
+            <i class="fas fa-search"></i>Tìm
+          </button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+
+      <!-- Legend Toggle -->
+      <button class="legend-toggle" id="legendToggle">
+        <i class="fas fa-layer-group"></i>Hiện chú thích
+      </button>
+
+      <!-- Map -->
+      <div id="map"></div>
+
+      <!-- Legend Panel -->
+      <div class="legend-panel" id="legendPanel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fas fa-water"></i>FLOODSIM</div>
+          <div class="panel-subtitle">Hệ thống cảnh báo ngập lụt thông minh</div>
+        </div>
+
+        <!-- Legend Section -->
+        <div class="legend-section">
+          <div class="section-title"><i class="fas fa-map-marker-alt"></i>CHÚ THÍCH BẢN ĐỒ</div>
+          <div class="legend-item" style="border-left-color: #33ebff;" onclick="toggleDamLayer('large', this)">
+            <div class="legend-color" style="background: #33ffee"></div>
+            <div class="legend-text">Thủy điện lớn (>100MW)</div>
+          </div>
+          <div class="legend-item" style="border-left-color: #ff9900;" onclick="toggleDamLayer('medium', this)">
+            <div class="legend-color" style="background: #ff9900"></div>
+            <div class="legend-text">Thủy điện vừa (30-100MW)</div>
+          </div>
+          <div class="legend-item" style="border-left-color: #0066ff;" onclick="toggleDamLayer('reservoir', this)">
+            <div class="legend-color" style="background: #0066ff"></div>
+            <div class="legend-text">Hồ chứa nước và đập</div>
+          </div>
+          <div class="legend-item" style="border-left-color: #33cc33">
+            <div class="legend-color" style="background: #33cc33"></div>
+            <div class="legend-text">Vùng an toàn (ít ngập)</div>
+          </div>
+          <div class="legend-item" style="border-left-color: #ff0000;" onclick="toggleDangerLayer(this)">
+            <div class="legend-color" style="background: #ff0000"></div>
+            <div class="legend-text">Vùng nguy hiểm (thường xuyên ngập)</div>
+          </div>
+          <div class="legend-item" style="border-left-color: #800080">
+            <div class="legend-color" style="background: rgba(128,0,128,0.3); border: 2px solid #800080;"></div>
+            <div class="legend-text">Khu vực ảnh hưởng xả lũ</div>
+          </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="legend-section">
+          <div class="section-title"><i class="fas fa-chart-bar"></i>THỐNG KÊ HỆ THỐNG</div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="totalDams">40</div>
+              <div class="stat-label">Công trình thủy điện</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="dangerAreas">9</div>
+              <div class="stat-label">Tỉnh nguy hiểm</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="largeDams">12</div>
+              <div class="stat-label">Thủy điện lớn</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="mediumDams">25</div>
+              <div class="stat-label">Thủy điện vừa</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="legend-section">
+          <div class="section-title"><i class="fas fa-info-circle"></i>HƯỚNG DẪN SỬ DỤNG</div>
+          <div class="instruction-content">
+            <p><strong>1.</strong> Nhấn vào chú thích bản đồ để xem vị trí </p>
+            <p><strong>2.</strong> Nhấn vào bản đồ để chọn vị trí phân tích</p>
+            <p><strong>3.</strong> Hệ thống tự động tìm 3 đập gần nhất</p>
+            <p><strong>4.</strong> Chọn đập để mô phỏng xả lũ</p>
+            <p><strong>5.</strong> Nhập lưu lượng xả và chạy mô phỏng</p>
+            <p><strong>6.</strong> Xem kết quả cảnh báo trên bản đồ</p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="panel-footer">
+          <div class="footer-note">Dữ liệu cập nhật đến tháng 12/2025</div>
+          <div class="footer-copy">&copy; 2025 FloodSim</div>
+        </div>
+      </div>
+
+      <!-- JavaScript files -->
+      <script src="main.js"></script>
+      <script src="data.js"></script>
+      <script src="logic.js"></script>
+    </body>
 
 </html>
