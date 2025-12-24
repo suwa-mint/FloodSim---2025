@@ -22,7 +22,7 @@ const listdap = [
     { id: 'd17', ten: 'Thủy điện Sê San 4', lat: 14.103, lng: 107.618, song: 'Sê San', dung_tich: 893, anh: 'images/sesan4.jpg' },
     { id: 'd18', ten: 'Thủy điện Plei Krông', lat: 14.412, lng: 107.901, song: 'Pô Kô', dung_tich: 1049, anh: 'images/pleikrong.png' },
     { id: 'd19', ten: 'Thủy điện Sông Ba Hạ', lat: 13.011, lng: 108.921, song: 'Sông Ba', dung_tich: 350, anh: 'images/baha.jpg' },
-    { id: 'd20', ten: 'Thủy điện Sông Hinh', lat: 12.923, lng: 109.001, song: 'Sông Hinh', dung_tich: 357, anh: 'images/songhinh.jpeg' },
+    { id: 'd20', ten: 'Thủy điện Sông Hinh', lat: 12.923, lng: 109.001, song: 'Sông Hinh', dung_tich: 357, anh: 'images/songhinh.jpg' },
 
     // Mien Nam
     { id: 'd21', ten: 'Thủy điện Trị An', lat: 11.118, lng: 107.001, song: 'Sông Đồng Nai', dung_tich: 2760, anh: 'images/trian.jpg' },
@@ -31,7 +31,7 @@ const listdap = [
     { id: 'd24', ten: 'Thủy điện Srok Phu Miêng', lat: 11.754, lng: 106.785, song: 'Sông Bé', dung_tich: 200, anh: 'images/shrokphumieng.png' },
     { id: 'd25', ten: 'Thủy điện Dầu Tiếng', lat: 11.362, lng: 106.353, song: 'Sài Gòn', dung_tich: 1580, anh: 'images/dautieng.png' },
     { id: 'd26', ten: 'Thủy điện Hàm Thuận', lat: 11.278, lng: 107.893, song: 'Sông La Ngà', dung_tich: 695, anh: 'images/hamthuan.jpg' },
-    { id: 'd27', ten: 'Thủy điện Đa Mi', lat: 11.201, lng: 107.854, song: 'Sông La Ngà', dung_tich: 141, anh: 'images/dami.jpeg' },
+    { id: 'd27', ten: 'Thủy điện Đa Mi', lat: 11.201, lng: 107.854, song: 'Sông La Ngà', dung_tich: 141, anh: 'images/dami.jpg' },
     { id: 'd28', ten: 'Thủy điện Đa Nhim', lat: 11.852, lng: 108.601, song: 'Sông Đa Nhim', dung_tich: 165, anh: 'images/danhim.jpg' },
     { id: 'd29', ten: 'Thủy điện Đại Ninh', lat: 11.642, lng: 108.305, song: 'Đồng Nai', dung_tich: 251, anh: 'images/daininh.jpg' },
     { id: 'd30', ten: 'Thủy điện Đồng Nai 3', lat: 11.892, lng: 107.805, song: 'Đồng Nai', dung_tich: 890, anh: 'images/dongnai3.jpg' },
@@ -47,4 +47,11 @@ const listdap = [
     { id: 'd38', ten: 'Thủy điện Nậm Na 2', lat: 22.456, lng: 103.234, song: 'Nậm Na', dung_tich: 120, anh: 'images/namna2.jpg' },
     { id: 'd39', ten: 'Thủy điện Bắc Hà', lat: 22.512, lng: 104.345, song: 'Sông Chảy', dung_tich: 171, anh: 'images/bacha.jpg' },
     { id: 'd40', ten: 'Thủy điện Trung Sơn', lat: 20.612, lng: 104.812, song: 'Sông Mã', dung_tich: 348, anh: 'images/trungson.jpeg' }
+];
+s
+// Danh sach vung nguy hiem
+const LIST_DANGER_AREAS = [
+    "Thừa Thiên Huế", "Quảng Trị", "Quảng Bình",
+    "Hà Tĩnh", "Nghệ An", "Quảng Nam",
+    "Phú Yên", "Khánh Hoà", "Bình Định"
 ];
