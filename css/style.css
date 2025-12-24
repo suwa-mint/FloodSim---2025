@@ -335,18 +335,18 @@ body {
 /* ========== DAM MARKER STYLES ========== */
 /* Điều chỉnh màu sắc marker dựa trên loại đập */
 .dam-marker-large {
-    background-color: #33ebff !important;
-    border-color: #33ebff !important;
+    background-color: #33ebff ;
+    border-color: #33ebff ;
 }
 
 .dam-marker-medium {
-    background-color: #ff9900 !important;
-    border-color: #ff9900 !important;
+    background-color: #ff9900;
+    border-color: #ff9900 ;
 }
 
 .dam-marker-reservoir {
-    background-color: #0066ff !important;
-    border-color: #0066ff !important;
+    background-color: #0066ff ;
+    border-color: #0066ff ;
 }
 
 /* ========== DAM IMAGE POPUP ========== */
