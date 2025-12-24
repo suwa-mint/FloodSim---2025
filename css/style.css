@@ -13,7 +13,6 @@ body {
     background: #f0f7ff;
 }
 
-/* ========== BẢN ĐỒ CHÍNH ========== */
 #map {
     flex: 1;
     height: 100vh;
@@ -41,6 +40,30 @@ body {
     transform: translateX(0);
 }
 
+.panel-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #0044ff;
+}
+
+.panel-title {
+    color: #0044ff;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.panel-subtitle {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
 /* ========== Ô TÌM KIẾM ========== */
 .search-container {
     position: absolute;
@@ -60,6 +83,11 @@ body {
     overflow: hidden;
     border: 2px solid #0044ff;
     transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+    box-shadow: 0 12px 40px rgba(0, 68, 255, 0.3);
+    transform: translateY(-2px);
 }
 
 .search-input {
@@ -86,7 +114,11 @@ body {
     gap: 8px;
 }
 
-/* ========== KẾT QUẢ TÌM KIẾM ========== */
+.search-button:hover {
+    background: linear-gradient(135deg, #0033cc 0%, #0055cc 100%);
+    padding: 0 35px;
+}
+
 .search-results {
     background: white;
     border-radius: 15px;
@@ -107,6 +139,11 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+}
+
+.search-result-item:hover {
+    background: linear-gradient(90deg, #f0f7ff 0%, #e6f0ff 100%);
+    transform: translateX(5px);
 }
 
 /* ========== CÁC MỤC TRONG BẢNG CHÚ THÍCH ========== */
@@ -131,6 +168,11 @@ body {
     cursor: pointer;
 }
 
+.legend-item:hover {
+    transform: translateX(5px);
+    background: #f0f7ff;
+}
+
 .legend-color {
     width: 24px;
     height: 24px;
@@ -138,47 +180,6 @@ body {
     margin-right: 15px;
     border: 3px solid white;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* ========== THỐNG KÊ ========== */
-.stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 10px;
-}
-
-.stat-item {
-    background: linear-gradient(135deg, #f8faff 0%, #f0f7ff 100%);
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    border: 1px solid #e0e6ff;
-}
-
-.stat-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: #0044ff;
-}
-
-/* ========== NÚT MỞ/ĐÓNG BẢNG CHÚ THÍCH ========== */
-.legend-toggle {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #0044ff 0%, #0066ff 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 18px;
-    cursor: pointer;
-    z-index: 1000;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(0, 68, 255, 0.3);
 }
 
 /* ========== ẢNH ĐẬP TRONG POPUP ========== */
@@ -212,29 +213,23 @@ body {
     font-weight: 600;
 }
 
-/* ========== PANEL XEM ẢNH CHI TIẾT ========== */
-.dam-detail-panel {
+/* ========== NÚT MỞ/ĐÓNG BẢNG CHÚ THÍCH ========== */
+.legend-toggle {
     position: absolute;
-    top: 80px;
-    right: 370px;
-    width: 320px;
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    border: 2px solid #0044ff;
-    z-index: 500;
-    display: none;
-    animation: slideIn 0.3s ease;
-}
-
-.dam-detail-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #0044ff 0%, #0066ff 100%);
+    color: white;
+    border: none;
     border-radius: 8px;
-    margin-bottom: 15px;
-    border: 2px solid #0044ff;
+    padding: 12px 18px;
+    cursor: pointer;
+    z-index: 1000;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0, 68, 255, 0.3);
 }
 
 /* ========== THIẾT KẾ CHO ĐIỆN THOẠI ========== */
@@ -259,10 +254,5 @@ body {
         bottom: 30px;
         right: 20px;
         top: auto;
-    }
-
-    .search-container {
-        width: 90%;
-        top: 15px;
     }
 }
