@@ -1,7 +1,4 @@
-// day la file logic.js
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// day la file cua T
+/// day la file cua T
 const listdap = [
     // Mien Bac
     { id: 'd01', ten: 'Thủy điện Sơn La', lat: 21.491, lng: 103.981, song: 'Sông Đà', dung_tich: 9260, anh: 'images/sonla.jpeg' },
@@ -51,13 +48,7 @@ const listdap = [
     { id: 'd39', ten: 'Thủy điện Bắc Hà', lat: 22.512, lng: 104.345, song: 'Sông Chảy', dung_tich: 171, anh: 'images/bacha.jpg' },
     { id: 'd40', ten: 'Thủy điện Trung Sơn', lat: 20.612, lng: 104.812, song: 'Sông Mã', dung_tich: 348, anh: 'images/trungson.jpeg' }
 ];
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
-function Haversine(lat1, lon1, lat2, lon2){
     const R = 6371; // Bán kính Trái Đất (km)
     const toRad = deg => deg * Math.PI / 180;
 
@@ -73,7 +64,7 @@ function Haversine(lat1, lon1, lat2, lon2){
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c;
-}
+
 function Haversine(lat1, lon1, lat2, lon2) {
     const R = 6371; // Bán kính Trái Đất (km)
     const toRad = deg => deg * Math.PI / 180;
