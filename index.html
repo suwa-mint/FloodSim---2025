@@ -20,12 +20,6 @@
       vietnamBounds: [[6, 80], [25, 200]],
       mapCenter: [16.0, 106.0],
       zoom: 6,
-      dangerousAreas: // phần này đang demo cần thêm nguồn thực tế
-        [
-          "Thừa Thiên Huế", "Quảng Trị", "Quảng Bình",
-          "Hà Tĩnh", "Nghệ An", "Quảng Nam",
-          "Phú Yên", "Khánh Hoà", "Bình Định"
-        ]
     };
   </script>
 </head>
@@ -133,10 +127,71 @@
   <!-- ========== PANEL XEM ẢNH CHI TIẾT ========== -->
   <div class="dam-detail-panel" id="damDetailPanel">
     <button class="close-detail" onclick="closeDamDetail()">&times;</button>
-    <img src="" alt="" class="dam-detail-image" id="damDetailImage">
+    <img src="" alt="" class="dam-detail-image" id="damDetailImage" onclick="openImageModal(this.src)"
+      style="cursor: pointer;" title="Nhấn để phóng to">
     <div class="dam-detail-title" id="damDetailTitle"></div>
     <div class="dam-detail-info" id="damDetailInfo"></div>
   </div>
+
+  <!-- ========== MODAL PHÓNG TO ẢNH ========== -->
+  <div id="imageModal" class="image-modal" onclick="this.style.display='none'">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="modalImg">
+  </div>
+  <style>
+    /* CSS cho Modal phóng to ảnh */
+    .image-modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      padding-top: 50px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .modal-content {
+      margin: auto;
+      display: block;
+      width: 80%;
+      max-width: 900px;
+      max-height: 90vh;
+      object-fit: contain;
+      animation-name: zoom;
+      animation-duration: 0.6s;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .close-modal:hover,
+    .close-modal:focus {
+      color: #bbb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    @keyframes zoom {
+      from {
+        transform: scale(0)
+      }
+
+      to {
+        transform: scale(1)
+      }
+    }
+  </style>
 
   <!-- ========== TẢI FILE DỮ LIỆU ========== -->
   <script src="js/data.js"></script>
@@ -154,6 +209,8 @@
     let damStates = { large: false, medium: false, reservoir: false };
     let dangerLayer = L.layerGroup();
     let isDangerLayerVisible = false;
+    let currentMarker = null;
+    let latestClickTime = 0;
 
     // ========== KHỞI TẠO BẢN ĐỒ ==========
     function initializeMap() {
@@ -171,8 +228,71 @@
         noWrap: true,
         bounds: CONFIG.vietnamBounds,
       }).addTo(map);
-    }
 
+      // Sự kiện click bản đồ để mô phỏng
+      map.on('click', function (e) {
+        // Xóa marker cũ nếu có
+        if (currentMarker) {
+          map.removeLayer(currentMarker);
+          currentMarker = null;
+          return;
+        }
+
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        // ========== KHU VỰC TÍCH HỢP DỮ LIỆU API ==========
+        // (Đã xóa giá trị mặc định, bạn hãy thêm logic gọi API vào đây)
+        let doCao = 5;
+        let luuLuongMua = 50;
+        let nguong = 5;
+
+
+        // Xử lý cảnh báo vùng (Sử dụng biến an toàn để tránh lỗi nếu chưa định nghĩa)
+        // Đảm bảo safeTenTinh không bị null để tránh lỗi normalizeString
+        let safeTenTinh = (typeof tenTinh !== 'undefined' && tenTinh !== null) ? tenTinh : 'Đang cập nhật';
+        let htmlCanhBao = `<div style="margin-bottom:5px; font-size:13px;">Vị trí: <b>${safeTenTinh}</b></div>`;
+        // Chuyển về String trước khi normalize để an toàn tuyệt đối
+        const isDangerous = LIST_DANGER_AREAS.some(area => normalizeString(area) === normalizeString(String(safeTenTinh)));
+
+        if (isDangerous) {
+          htmlCanhBao += `<div style="color:red; font-weight:bold; font-size:12px;">⚠️ Khu vực nguy hiểm cao</div>`;
+        } else {
+          htmlCanhBao += `<div style="color:green; font-weight:bold; font-size:12px;">✅ Khu vực tương đối an toàn</div>`;
+        }
+
+        // Tìm 3 đập gần nhất (Sử dụng hàm có sẵn trong logic.js)
+        const nearestDams = threeNearest(lat, lng);
+
+        // Tạo options cho select
+        let options = nearestDams.map((d, index) =>
+          `<option value="${d.id}" ${index === 0 ? 'selected' : ''}>${d.ten} (${d.distance.toFixed(1)}km)</option>`
+        ).join('');
+
+        var popupHTML = `
+            <div class="info-panel">
+                <h3 style="margin:0; color:#0044ff; border-bottom:2px solid #ddd;">Phân Tích Đa Nguồn</h3>
+                ${htmlCanhBao} <div style="margin-top:10px;">
+                    <label style="font-size:12px; font-weight:bold;">Nguồn xả lũ giả lập:</label>
+                    <select id="selectDap" onchange="doiDap(this.value, ${doCao}, ${luuLuongMua})">${options}</select>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px; font-size:12px">
+                    <div style="background:#f5f5f5; padding:5px;">⛰️ Độ cao: <b>${doCao}m</b></div>
+                    <div style="background:#e6f7ff; padding:5px;">🌧️ Mưa: <b>${luuLuongMua.toFixed(1)}mm</b></div>
+                    <div style="background:#eeffee; padding:5px; grid-column: span 2;">🛡️ Ngưỡng an toàn: <b id="lblNguong" style="color:green">${nguong.toLocaleString()}</b></div>
+                </div>
+                <div style="background:#fff0f0; padding:10px; margin-top:10px; border:1px solid #ffccc7;">
+                    <label><b>Xả lũ (m³/s):</b></label>
+                    <input type="number" id="inpXa" value="${nguong + 500}" style="width:100%; padding:5px; margin-top:5px;">
+                    <button class="sim-btn" onclick="chaySim(${doCao})">CHẠY MÔ PHỎNG</button>
+                </div>
+            </div>
+        `;
+
+        // Hiển thị marker tại điểm click và mở popup
+        currentMarker = L.marker([lat, lng]).addTo(map).bindPopup(popupHTML).openPopup();
+      });
+    }
     // ========== KHỞI TẠO CÁC ĐẬP ==========
     function initializeDams() {
       listdap.forEach(dap => {
@@ -251,7 +371,7 @@
         element.style.backgroundColor = "#f8faff";
       } else {
         dangerLayer.clearLayers();
-        // Dữ liệu tọa độ các vùng nguy hiểm (đã xóa VIETNAM_PROVINCES)
+        // Dữ liệu tọa độ các vùng nguy hiểm (demo
         const dangerCoords = {
           "Thừa Thiên Huế": [16.4637, 107.5909],
           "Quảng Trị": [16.8500, 107.1000],
@@ -264,7 +384,7 @@
           "Bình Định": [13.7833, 109.2167]
         };
 
-        CONFIG.dangerousAreas.forEach(areaName => {
+        LIST_DANGER_AREAS.forEach(areaName => {
           const coords = dangerCoords[areaName];
           if (coords) {
             L.circle(coords, {
@@ -357,6 +477,7 @@
       });
     }
 
+
     // ========== HÀM TIỆN ÍCH ==========
     function normalizeString(str) {
       return str
@@ -381,6 +502,14 @@
         `;
         document.getElementById('damDetailPanel').style.display = 'block';
       }
+    }
+
+    // Hàm mở modal phóng to ảnh
+    function openImageModal(src) {
+      const modal = document.getElementById("imageModal");
+      const modalImg = document.getElementById("modalImg");
+      modal.style.display = "block";
+      modalImg.src = src;
     }
 
 

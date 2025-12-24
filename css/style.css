@@ -203,7 +203,7 @@ body {
 /* ========== ẢNH ĐẬP TRONG POPUP ========== */
 .dam-popup-image {
     width: 100%;
-    max-width: 280px;
+    max-width: 300px;
     height: auto;
     max-height: 180px;
     object-fit: cover;

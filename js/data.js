@@ -12,7 +12,7 @@ const listdap = [
     // Mien Trung va Tay Nguyen
     { id: 'd08', ten: 'Thủy điện Bản Vẽ', lat: 19.339, lng: 104.484, song: 'Sông Cả', dung_tich: 1830, anh: 'images/banve.jpg' },
     { id: 'd09', ten: 'Thủy điện Cửa Đạt', lat: 19.876, lng: 105.275, song: 'Sông Chu', dung_tich: 1450, anh: 'images/cuadat.jpg' },
-    { id: 'd10', ten: 'Thủy điện Hủa Na', lat: 19.683, lng: 104.756, song: 'Sông Chu', dung_tich: 500, anh: 'images/huana.jpg' },
+    { id: 'd10', ten: 'Thủy điện Hủa Na', lat: 19.683, lng: 104.756, song: 'Sông Chu', dung_tich: 500, anh: 'images/huana.jpg },
     { id: 'd11', ten: 'Thủy điện Bình Điền', lat: 16.345, lng: 107.502, song: 'Sông Hương', dung_tich: 423, anh: 'images/binhdien.jpg' },
     { id: 'd12', ten: 'Thủy điện A Lưới', lat: 16.201, lng: 107.251, song: 'Sông A Sáp', dung_tich: 60, anh: 'images/aluoi.jpg' },
     { id: 'd13', ten: 'Thủy điện Sông Tranh 2', lat: 15.340, lng: 108.125, song: 'Thu Bồn', dung_tich: 730, anh: 'images/songtranh2.webp' },
