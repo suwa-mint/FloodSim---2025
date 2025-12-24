@@ -127,7 +127,7 @@
     <!-- Footer -->
     <div class="panel-footer">
       <div class="footer-note">Dữ liệu cập nhật đến tháng 12/2025</div>
-      <div class="footer-copy">&copy; 2025 FloodSim</div>
+      <div class="footer-copy"> 2025 FloodSim</div>
     </div>
   </div>
 
@@ -141,6 +141,7 @@
 
   <!-- ========== TẢI FILE DỮ LIỆU ========== -->
   <script src="js/data.js"></script>
+  <script src="js/logic.js"></script>
 
   <script>
     // ========== BIẾN TOÀN CỤC ==========
@@ -388,40 +389,6 @@
         `;
         document.getElementById('damDetailPanel').style.display = 'block';
       }
-    }
-
-    // ========== CÁC HÀM TÌM KIẾM ĐẬP ==========
-    function Haversine(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const toRad = deg => deg * Math.PI / 180;
-
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-      return R * c;
-    }
-
-    function findThreeNearest(lat1, lon1) {
-      const distances = listdap.map(dap => ({
-        ...dap,
-        distance: Haversine(lat1, lon1, dap.lat, dap.lng)
-      }));
-
-      distances.sort((a, b) => a.distance - b.distance);
-      return distances.slice(0, 3);
-    }
-
-    function findDamsInRadius(lat1, lon1, radiusKm) {
-      const results = listdap.filter(dap => {
-        const distance = Haversine(lat1, lon1, dap.lat, dap.lng);
-        dap.distance = distance;
-        return distance <= radiusKm;
-      }); return results.sort((a, b) => a.distance - b.distance);
     }
 
     // ========== SỰ KIỆN ==========
