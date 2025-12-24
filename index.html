@@ -4,140 +4,440 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FloodSim</title>
+  <title>FloodSim - Hệ thống cảnh báo ngập lụt</title>
+
+  <!-- Thư viện bên ngoài -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+
+  <!-- File CSS của chúng ta -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Cấu hình hệ thống -->
+  <script>
+    // ========== CẤU HÌNH HỆ THỐNG ==========
+    const CONFIG = {
+      vietnamBounds: [[6, 80], [25, 200]],
+      mapCenter: [16.0, 106.0],
+      zoom: 6,
+      dangerousAreas: // phần này đang demo cần thêm nguồn thực tế
+        [
+          "Thừa Thiên Huế", "Quảng Trị", "Quảng Bình",
+          "Hà Tĩnh", "Nghệ An", "Quảng Nam",
+          "Phú Yên", "Khánh Hoà", "Bình Định"
+        ]
+    };
+  </script>
 </head>
 
 <body>
-  <!-- Search -->
+  <!-- ========== PHẦN TÌM KIẾM ========== -->
   <div class="search-container">
-    <!-- ... search content ... -->
+    <div class="search-box">
+      <input type="text" class="search-input" id="searchInput"
+        placeholder="Nhập tỉnh thành, thành phố hoặc địa điểm tại Việt Nam..." autocomplete="off">
+      <button class="search-button" onclick="performSearch()">
+        <i class="fas fa-search"></i>Tìm kiếm
+      </button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
   </div>
 
-  <!-- Legend Toggle -->
+  <!-- ========== NÚT MỞ BẢNG CHÚ THÍCH ========== -->
   <button class="legend-toggle" id="legendToggle">
     <i class="fas fa-layer-group"></i>Hiện chú thích
   </button>
 
-  <!-- Map -->
+  <!-- ========== BẢN ĐỒ CHÍNH ========== -->
   <div id="map"></div>
 
-  <!-- Legend Panel -->
+  <!-- ========== BẢNG CHÚ THÍCH (BÊN PHẢI) ========== -->
   <div class="legend-panel" id="legendPanel">
-    <!-- ... legend content ... -->
+    <div class="panel-header">
+      <div class="panel-title"><i class="fas fa-water"></i>FLOODSIM</div>
+      <div class="panel-subtitle">Hệ thống cảnh báo ngập lụt thông minh</div>
+    </div>
+
+    <!-- Phần chú thích bản đồ -->
+    <div class="legend-section">
+      <div class="section-title"><i class="fas fa-map-marker-alt"></i>CHÚ THÍCH BẢN ĐỒ</div>
+      <div class="legend-item" style="border-left-color: #33ebff;" onclick="toggleDamLayer('large', this)">
+        <div class="legend-color" style="background: #33ebff; border-color: #fff;"></div>
+        <div class="legend-text">Thủy điện lớn (>100MW)</div>
+      </div>
+      <div class="legend-item" style="border-left-color: #ff9900;" onclick="toggleDamLayer('medium', this)">
+        <div class="legend-color" style="background: #ff9900; border-color: #fff;"></div>
+        <div class="legend-text">Thủy điện vừa (30-100MW)</div>
+      </div>
+      <div class="legend-item" style="border-left-color: #0066ff;" onclick="toggleDamLayer('reservoir', this)">
+        <div class="legend-color" style="background: #0066ff; border-color: #fff;"></div>
+        <div class="legend-text">Hồ chứa nước và đập</div>
+      </div>
+      <div class="legend-item" style="border-left-color: #33cc33">
+        <div class="legend-color" style="background: #33cc33"></div>
+        <div class="legend-text">Vùng an toàn (ít ngập)</div>
+      </div>
+      <div class="legend-item" style="border-left-color: #ff0000;" onclick="toggleDangerLayer(this)">
+        <div class="legend-color" style="background: rgba(255, 0, 0, 0.5); border: 2px solid #ff0000;"></div>
+        <div class="legend-text">Vùng nguy hiểm (thường xuyên ngập)</div>
+      </div>
+      <div class="legend-item" style="border-left-color: #800080">
+        <div class="legend-color" style="background: rgba(128,0,128,0.3); border: 2px solid #800080;"></div>
+        <div class="legend-text">Khu vực ảnh hưởng xả lũ</div>
+      </div>
+    </div>
+
+    <!-- Phần thống kê -->
+    <div class="legend-section">
+      <div class="section-title"><i class="fas fa-chart-bar"></i>THỐNG KÊ HỆ THỐNG</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="totalDams">40</div>
+          <div class="stat-label">Công trình thủy điện</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="dangerAreas">9</div>
+          <div class="stat-label">Tỉnh nguy hiểm</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="largeDams">12</div>
+          <div class="stat-label">Thủy điện lớn</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="mediumDams">25</div>
+          <div class="stat-label">Thủy điện vừa</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phần hướng dẫn sử dụng -->
+    <div class="legend-section">
+      <div class="section-title"><i class="fas fa-info-circle"></i>HƯỚNG DẪN SỬ DỤNG</div>
+      <div class="instruction-content">
+        <p><strong>1.</strong> Nhấn vào chú thích bản đồ để xem vị trí</p>
+        <p><strong>2.</strong> Nhấn vào bản đồ để chọn vị trí phân tích</p>
+        <p><strong>3.</strong> Hệ thống tự động tìm 3 đập gần nhất</p>
+        <p><strong>4.</strong> Chọn đập để mô phỏng xả lũ</p>
+        <p><strong>5.</strong> Nhập lưu lượng xả và chạy mô phỏng</p>
+        <p><strong>6.</strong> Xem kết quả cảnh báo trên bản đồ</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="panel-footer">
+      <div class="footer-note">Dữ liệu cập nhật đến tháng 12/2025</div>
+      <div class="footer-copy">&copy; 2025 FloodSim</div>
+    </div>
   </div>
 
-  <!-- Dam Detail Panel -->
+  <!-- ========== PANEL XEM ẢNH CHI TIẾT ========== -->
   <div class="dam-detail-panel" id="damDetailPanel">
-    <!-- ... dam detail content ... -->
+    <button class="close-detail" onclick="closeDamDetail()">&times;</button>
+    <img src="" alt="" class="dam-detail-image" id="damDetailImage">
+    <div class="dam-detail-title" id="damDetailTitle"></div>
+    <div class="dam-detail-info" id="damDetailInfo"></div>
+  </div>
 
-    <body>
-      <!-- Search -->
-      <div class="search-container">
-        <div class="search-box">
-          <input type="text" class="search-input" id="searchInput"
-            placeholder="Nhập tỉnh thành, thành phố hoặc địa điểm tại Việt Nam..." autocomplete="off">
-          <button class="search-button" onclick="performSearch()">
-            <i class="fas fa-search"></i>Tìm
-          </button>
-        </div>
-        <div class="search-results" id="searchResults"></div>
-      </div>
+  <!-- ========== TẢI FILE DỮ LIỆU ========== -->
+  <script src="js/data.js"></script>
 
-      <!-- Legend Toggle -->
-      <button class="legend-toggle" id="legendToggle">
-        <i class="fas fa-layer-group"></i>Hiện chú thích
-      </button>
+  <script>
+    // ========== BIẾN TOÀN CỤC ==========
+    let map;
+    let legendVisible = false;
+    let damLayers = {
+      large: L.layerGroup(),
+      medium: L.layerGroup(),
+      reservoir: L.layerGroup()
+    };
+    let damStates = { large: false, medium: false, reservoir: false };
+    let dangerLayer = L.layerGroup();
+    let isDangerLayerVisible = false;
 
-      <!-- Map -->
-      <div id="map"></div>
+    // Dữ liệu tỉnh thành (demo chưa chính thức)
+    const VIETNAM_PROVINCES = [
+      { name: "Thừa Thiên Huế", type: "Tỉnh", lat: 16.4637, lng: 107.5909 },
+      { name: "Quảng Trị", type: "Tỉnh", lat: 16.8500, lng: 107.1000 },
+      { name: "Quảng Bình", type: "Tỉnh", lat: 17.4833, lng: 106.6000 },
+      { name: "Hà Tĩnh", type: "Tỉnh", lat: 18.3333, lng: 105.9000 },
+      { name: "Nghệ An", type: "Tỉnh", lat: 19.2500, lng: 104.8000 },
+      { name: "Quảng Nam", type: "Tỉnh", lat: 15.5667, lng: 107.9667 },
+      { name: "Phú Yên", type: "Tỉnh", lat: 13.0833, lng: 109.0833 },
+      { name: "Khánh Hoà", type: "Tỉnh", lat: 12.2500, lng: 109.1833 },
+      { name: "Bình Định", type: "Tỉnh", lat: 13.7833, lng: 109.2167 },
+      { name: "Hà Nội", type: "Thành phố", lat: 21.0285, lng: 105.8542 },
+      { name: "Hồ Chí Minh", type: "Thành phố", lat: 10.8231, lng: 106.6297 }
+    ];
 
-      <!-- Legend Panel -->
-      <div class="legend-panel" id="legendPanel">
-        <div class="panel-header">
-          <div class="panel-title"><i class="fas fa-water"></i>FLOODSIM</div>
-          <div class="panel-subtitle">Hệ thống cảnh báo ngập lụt thông minh</div>
-        </div>
+    // ========== KHỞI TẠO BẢN ĐỒ ==========
+    function initializeMap() {
+      map = L.map("map", {
+        center: CONFIG.mapCenter,
+        zoom: CONFIG.zoom,
+        maxBounds: L.latLngBounds(CONFIG.vietnamBounds),
+        maxZoom: 20,
+        minZoom: 6,
+      });
 
-        <!-- Legend Section -->
-        <div class="legend-section">
-          <div class="section-title"><i class="fas fa-map-marker-alt"></i>CHÚ THÍCH BẢN ĐỒ</div>
-          <div class="legend-item" style="border-left-color: #33ebff;" onclick="toggleDamLayer('large', this)">
-            <div class="legend-color" style="background: #33ffee"></div>
-            <div class="legend-text">Thủy điện lớn (>100MW)</div>
-          </div>
-          <div class="legend-item" style="border-left-color: #ff9900;" onclick="toggleDamLayer('medium', this)">
-            <div class="legend-color" style="background: #ff9900"></div>
-            <div class="legend-text">Thủy điện vừa (30-100MW)</div>
-          </div>
-          <div class="legend-item" style="border-left-color: #0066ff;" onclick="toggleDamLayer('reservoir', this)">
-            <div class="legend-color" style="background: #0066ff"></div>
-            <div class="legend-text">Hồ chứa nước và đập</div>
-          </div>
-          <div class="legend-item" style="border-left-color: #33cc33">
-            <div class="legend-color" style="background: #33cc33"></div>
-            <div class="legend-text">Vùng an toàn (ít ngập)</div>
-          </div>
-          <div class="legend-item" style="border-left-color: #ff0000;" onclick="toggleDangerLayer(this)">
-            <div class="legend-color" style="background: #ff0000"></div>
-            <div class="legend-text">Vùng nguy hiểm (thường xuyên ngập)</div>
-          </div>
-          <div class="legend-item" style="border-left-color: #800080">
-            <div class="legend-color" style="background: rgba(128,0,128,0.3); border: 2px solid #800080;"></div>
-            <div class="legend-text">Khu vực ảnh hưởng xả lũ</div>
-          </div>
-        </div>
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap | FloodSim',
+        maxZoom: 20,
+        noWrap: true,
+        bounds: CONFIG.vietnamBounds,
+      }).addTo(map);
+    }
 
-        <!-- Statistics Section -->
-        <div class="legend-section">
-          <div class="section-title"><i class="fas fa-chart-bar"></i>THỐNG KÊ HỆ THỐNG</div>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-value" id="totalDams">40</div>
-              <div class="stat-label">Công trình thủy điện</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="dangerAreas">9</div>
-              <div class="stat-label">Tỉnh nguy hiểm</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="largeDams">12</div>
-              <div class="stat-label">Thủy điện lớn</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="mediumDams">25</div>
-              <div class="stat-label">Thủy điện vừa</div>
-            </div>
-          </div>
-        </div>
+    // ========== KHỞI TẠO CÁC ĐẬP ==========
+    function initializeDams() {
+      listdap.forEach(dap => {
+        let color = '#0066ff', targetLayer = damLayers.reservoir;
+        let loai = 'Hồ';
 
-        <!-- Instructions -->
-        <div class="legend-section">
-          <div class="section-title"><i class="fas fa-info-circle"></i>HƯỚNG DẪN SỬ DỤNG</div>
-          <div class="instruction-content">
-            <p><strong>1.</strong> Nhấn vào chú thích bản đồ để xem vị trí </p>
-            <p><strong>2.</strong> Nhấn vào bản đồ để chọn vị trí phân tích</p>
-            <p><strong>3.</strong> Hệ thống tự động tìm 3 đập gần nhất</p>
-            <p><strong>4.</strong> Chọn đập để mô phỏng xả lũ</p>
-            <p><strong>5.</strong> Nhập lưu lượng xả và chạy mô phỏng</p>
-            <p><strong>6.</strong> Xem kết quả cảnh báo trên bản đồ</p>
-          </div>
-        </div>
+        if (dap.dung_tich >= 1000) {
+          loai = 'Lớn';
+          color = '#33ebff';
+          targetLayer = damLayers.large;
+        } else if (dap.dung_tich >= 100) {
+          loai = 'Vừa';
+          color = '#ff9900';
+          targetLayer = damLayers.medium;
+        }
 
-        <!-- Footer -->
-        <div class="panel-footer">
-          <div class="footer-note">Dữ liệu cập nhật đến tháng 12/2025</div>
-          <div class="footer-copy">&copy; 2025 FloodSim</div>
-        </div>
-      </div>
+        L.circleMarker([dap.lat, dap.lng], {
+          radius: 8,
+          fillColor: color,
+          color: "#fff",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.9
+        })
+          .bindPopup(`
+  <img src="${dap.anh}" class="dam-popup-image" onclick="openDamDetail('${dap.id}')" title="Nhấn để xem chi tiết" onerror="this.style.display='none'">
+  <div class="dam-info">
+    <strong>${dap.ten}</strong>
+    <div class="dam-info-row">
+      <span class="dam-info-label">Loại:</span>
+      <span class="dam-info-value">${loai}</span>
+    </div>
+    <div class="dam-info-row">
+      <span class="dam-info-label">Sông:</span>
+      <span class="dam-info-value">${dap.song}</span>
+    </div>
+    <div class="dam-info-row">
+      <span class="dam-info-label">Dung tích:</span>
+      <span class="dam-info-value">${dap.dung_tich} triệu m³</span>
+    </div>
+  </div>
+  `)
+          .addTo(targetLayer);
+      });
+    }
 
-      <!-- JavaScript files -->
-      <script src="main.js"></script>
-      <script src="data.js"></script>
-      <script src="logic.js"></script>
-    </body>
+    // ========== ĐIỀU KHIỂN GIAO DIỆN ==========
+    function toggleLegendPanel() {
+      const panel = document.getElementById("legendPanel");
+      const toggleBtn = document.getElementById("legendToggle");
+
+      panel.classList.toggle("active");
+      legendVisible = panel.classList.contains("active");
+
+      if (legendVisible) {
+        toggleBtn.innerHTML = '<i class="fas fa-times"></i> Đóng';
+      } else {
+        toggleBtn.innerHTML = '<i class="fas fa-layer-group"></i> Hiện chú thích';
+      }
+    }
+
+    function toggleDamLayer(type, element) {
+      if (damStates[type]) {
+        map.removeLayer(damLayers[type]);
+        element.style.backgroundColor = "#f8faff";
+      } else {
+        map.addLayer(damLayers[type]);
+        element.style.backgroundColor = "#e0f7fa";
+      }
+      damStates[type] = !damStates[type];
+    }
+
+    function toggleDangerLayer(element) {
+      if (isDangerLayerVisible) {
+        map.removeLayer(dangerLayer);
+        element.style.backgroundColor = "#f8faff";
+      } else {
+        dangerLayer.clearLayers();
+        CONFIG.dangerousAreas.forEach(areaName => {
+          const province = VIETNAM_PROVINCES.find(
+            p => normalizeString(p.name) === normalizeString(areaName)
+          );
+
+          if (province) {
+            L.circle([province.lat, province.lng], {
+              color: '#ff0000',
+              fillColor: '#ff0000',
+              fillOpacity: 0.5,
+              radius: 25000
+            }).bindPopup(`<b>${province.name}</b><br>Khu vực nguy cơ ngập cao`)
+              .addTo(dangerLayer);
+          }
+        });
+        map.addLayer(dangerLayer);
+        element.style.backgroundColor = "#e0f7fa";
+      }
+      isDangerLayerVisible = !isDangerLayerVisible;
+    }
+
+    // ========== CHỨC NĂNG TÌM KIẾM ==========
+    function performSearch() {
+      const query = document.getElementById("searchInput").value.trim();
+      const results = document.getElementById("searchResults");
+
+      if (!query) {
+        results.style.display = "none";
+        return;
+      }
+
+      const normalizedQuery = normalizeString(query);
+
+      // Tìm tỉnh thành
+      const provResults = VIETNAM_PROVINCES.filter(p =>
+        normalizeString(p.name).includes(normalizedQuery)
+      );
+
+      // Tìm đập thủy điện
+      const damResults = listdap.filter(d =>
+        normalizeString(d.ten).includes(normalizedQuery) ||
+        normalizeString(d.song).includes(normalizedQuery)
+      );
+
+      // Hiển thị kết quả
+      let html = "";
+      if (provResults.length > 0) {
+        html += '<div style="padding:8px 12px;"><strong>Tỉnh/thành phố:</strong></div>';
+        provResults.forEach(p => {
+          html += `
+  <div class="search-result-item" data-lat="${p.lat}" data-lng="${p.lng}">
+    <i class="fas fa-map-marker-alt"></i>
+    <div>
+      <div class="result-title">${p.name}</div>
+      <div class="result-subtitle">${p.type}</div>
+    </div>
+  </div>
+  `;
+        });
+      }
+
+      if (damResults.length > 0) {
+        html += '<div style="padding:8px 12px;"><strong>Thủy điện:</strong></div>';
+        damResults.forEach(d => {
+          html += `
+  <div class="search-result-item" data-lat="${d.lat}" data-lng="${d.lng}">
+    <i class="fas fa-water"></i>
+    <div>
+      <div class="result-title">${d.ten}</div>
+      <div class="result-subtitle">${d.song}</div>
+    </div>
+  </div>
+  `;
+        });
+      }
+
+      if (!html) {
+        html = '<div class="no-results">Không tìm thấy kết quả</div>';
+      }
+
+      results.innerHTML = html;
+      results.style.display = "block";
+
+      // Thêm sự kiện click cho kết quả
+      results.querySelectorAll(".search-result-item").forEach(item => {
+        item.addEventListener("click", function () {
+          const lat = parseFloat(this.dataset.lat);
+          const lng = parseFloat(this.dataset.lng);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            map.setView([lat, lng], 10);
+            results.style.display = "none";
+          }
+        });
+      });
+    }
+
+    // ========== HÀM TIỆN ÍCH ==========
+    function normalizeString(str) {
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/đ/g, "d");
+    }
+
+    function closeDamDetail() {
+      document.getElementById('damDetailPanel').style.display = 'none';
+    }
+
+    function openDamDetail(damId) {
+      const dap = listdap.find(d => d.id === damId);
+      if (dap) {
+        document.getElementById('damDetailImage').src = dap.anh;
+        document.getElementById('damDetailTitle').innerText = dap.ten;
+        document.getElementById('damDetailInfo').innerHTML = `
+          <p><strong>Sông:</strong> ${dap.song}</p>
+          <p><strong>Dung tích:</strong> ${dap.dung_tich} triệu m³</p>
+          <p><strong>Tọa độ:</strong> ${dap.lat}, ${dap.lng}</p>
+          <p><em>Dữ liệu được cập nhật từ hệ thống quan trắc quốc gia.</em></p>
+        `;
+        document.getElementById('damDetailPanel').style.display = 'block';
+      }
+    }
+
+    // ========== CÁC HÀM TÌM KIẾM ĐẬP ==========
+    function Haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const toRad = deg => deg * Math.PI / 180;
+
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return R * c;
+    }
+
+    function findThreeNearest(lat1, lon1) {
+      const distances = listdap.map(dap => ({
+        ...dap,
+        distance: Haversine(lat1, lon1, dap.lat, dap.lng)
+      }));
+
+      distances.sort((a, b) => a.distance - b.distance);
+      return distances.slice(0, 3);
+    }
+
+    function findDamsInRadius(lat1, lon1, radiusKm) {
+      const results = listdap.filter(dap => {
+        const distance = Haversine(lat1, lon1, dap.lat, dap.lng);
+        dap.distance = distance;
+        return distance <= radiusKm;
+      }); return results.sort((a, b) => a.distance - b.distance);
+    }
+
+    // ========== SỰ KIỆN ==========
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("legendToggle").addEventListener("click", toggleLegendPanel);
+
+      document.getElementById("searchInput").addEventListener("input", function () {
+        if (!this.value.trim()) {
+          document.getElementById("searchResults").style.display = "none";
+        }
+      });
+
+      initializeMap();
+      initializeDams();
+    });
+  </script>
+</body>
 
 </html>
