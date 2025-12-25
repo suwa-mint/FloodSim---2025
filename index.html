@@ -128,7 +128,7 @@
   <div class="dam-detail-panel" id="damDetailPanel">
     <button class="close-detail" onclick="closeDamDetail()">&times;</button>
     <img src="" alt="" class="dam-detail-image" id="damDetailImage" onclick="openImageModal(this.src)"
-      style="cursor: pointer;" title="Nhấn để phóng to">
+      title="Nhấn để phóng to">
     <div class="dam-detail-title" id="damDetailTitle"></div>
     <div class="dam-detail-info" id="damDetailInfo"></div>
   </div>
@@ -138,60 +138,6 @@
     <span class="close-modal">&times;</span>
     <img class="modal-content" id="modalImg">
   </div>
-  <style>
-    /* CSS cho Modal phóng to ảnh */
-    .image-modal {
-      display: none;
-      position: fixed;
-      z-index: 10000;
-      padding-top: 50px;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.9);
-    }
-
-    .modal-content {
-      margin: auto;
-      display: block;
-      width: 80%;
-      max-width: 900px;
-      max-height: 90vh;
-      object-fit: contain;
-      animation-name: zoom;
-      animation-duration: 0.6s;
-    }
-
-    .close-modal {
-      position: absolute;
-      top: 15px;
-      right: 35px;
-      color: #f1f1f1;
-      font-size: 40px;
-      font-weight: bold;
-      transition: 0.3s;
-      cursor: pointer;
-    }
-
-    .close-modal:hover,
-    .close-modal:focus {
-      color: #bbb;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    @keyframes zoom {
-      from {
-        transform: scale(0)
-      }
-
-      to {
-        transform: scale(1)
-      }
-    }
-  </style>
 
   <!-- ========== TẢI FILE DỮ LIỆU ========== -->
   <script src="js/data.js"></script>
@@ -212,6 +158,19 @@
     let currentMarker = null;
     let latestClickTime = 0;
 
+    // Tọa độ các vùng nguy hiểm (Dùng chung cho click và layer)
+    const dangerCoords = {
+      "Thừa Thiên Huế": [16.4637, 107.5909],
+      "Quảng Trị": [16.8500, 107.1000],
+      "Quảng Bình": [17.4833, 106.6000],
+      "Hà Tĩnh": [18.3333, 105.9000],
+      "Nghệ An": [19.2500, 104.8000],
+      "Quảng Nam": [15.5667, 107.9667],
+      "Phú Yên": [13.0833, 109.0833],
+      "Khánh Hoà": [12.2500, 109.1833],
+      "Bình Định": [13.7833, 109.2167]
+    };
+
     // ========== KHỞI TẠO BẢN ĐỒ ==========
     function initializeMap() {
       map = L.map("map", {
@@ -230,7 +189,7 @@
       }).addTo(map);
 
       // Sự kiện click bản đồ để mô phỏng
-      map.on('click', function (e) {
+      map.on('click', async function (e) {
         // Xóa marker cũ nếu có
         if (currentMarker) {
           map.removeLayer(currentMarker);
@@ -241,24 +200,32 @@
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
 
-        // ========== KHU VỰC TÍCH HỢP DỮ LIỆU API ==========
-        // (Đã xóa giá trị mặc định, bạn hãy thêm logic gọi API vào đây)
-        let doCao = 5;
-        let luuLuongMua = 50;
-        let nguong = 5;
+        // ========== KHU VỰC TÍCH HỢP DỮ LIỆU API (ĐỂ TRỐNG) ==========
+        let doCao = 0;
+        let luuLuongMua = 0;
+        let nguong = 0;
 
 
-        // Xử lý cảnh báo vùng (Sử dụng biến an toàn để tránh lỗi nếu chưa định nghĩa)
-        // Đảm bảo safeTenTinh không bị null để tránh lỗi normalizeString
-        let safeTenTinh = (typeof tenTinh !== 'undefined' && tenTinh !== null) ? tenTinh : 'Đang cập nhật';
-        let htmlCanhBao = `<div style="margin-bottom:5px; font-size:13px;">Vị trí: <b>${safeTenTinh}</b></div>`;
-        // Chuyển về String trước khi normalize để an toàn tuyệt đối
-        const isDangerous = LIST_DANGER_AREAS.some(area => normalizeString(area) === normalizeString(String(safeTenTinh)));
+        // Xử lý xác định vùng nguy hiểm dựa trên khoảng cách
+        let detectedLocation = "Vùng lân cận";
+        let isDangerous = false;
+        const detectionRadius = 25000; // 25km
 
+        for (const area of LIST_DANGER_AREAS) {
+          if (dangerCoords[area]) {
+            if (map.distance([lat, lng], dangerCoords[area]) <= detectionRadius) {
+              detectedLocation = area;
+              isDangerous = true;
+              break;
+            }
+          }
+        }
+
+        let htmlCanhBao = `<div class="popup-location">Vị trí: <b>${detectedLocation}</b></div>`;
         if (isDangerous) {
-          htmlCanhBao += `<div style="color:red; font-weight:bold; font-size:12px;">⚠️ Khu vực nguy hiểm cao</div>`;
+          htmlCanhBao += `<div class="popup-danger">⚠️ Khu vực nguy hiểm cao</div>`;
         } else {
-          htmlCanhBao += `<div style="color:green; font-weight:bold; font-size:12px;">✅ Khu vực tương đối an toàn</div>`;
+          htmlCanhBao += `<div class="popup-safe">✅ Khu vực tương đối an toàn</div>`;
         }
 
         // Tìm 3 đập gần nhất (Sử dụng hàm có sẵn trong logic.js)
@@ -271,19 +238,19 @@
 
         var popupHTML = `
             <div class="info-panel">
-                <h3 style="margin:0; color:#0044ff; border-bottom:2px solid #ddd;">Phân Tích Đa Nguồn</h3>
-                ${htmlCanhBao} <div style="margin-top:10px;">
-                    <label style="font-size:12px; font-weight:bold;">Nguồn xả lũ giả lập:</label>
+                <h3 class="popup-header">Phân Tích Đa Nguồn</h3>
+                ${htmlCanhBao} <div class="popup-section">
+                    <label class="popup-label">Nguồn xả lũ giả lập:</label>
                     <select id="selectDap" onchange="doiDap(this.value, ${doCao}, ${luuLuongMua})">${options}</select>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px; font-size:12px">
-                    <div style="background:#f5f5f5; padding:5px;">⛰️ Độ cao: <b>${doCao}m</b></div>
-                    <div style="background:#e6f7ff; padding:5px;">🌧️ Mưa: <b>${luuLuongMua.toFixed(1)}mm</b></div>
-                    <div style="background:#eeffee; padding:5px; grid-column: span 2;">🛡️ Ngưỡng an toàn: <b id="lblNguong" style="color:green">${nguong.toLocaleString()}</b></div>
+                <div class="popup-grid">
+                    <div class="popup-grid-item height">⛰️ Độ cao: <b>${doCao}m</b></div>
+                    <div class="popup-grid-item rain">🌧️ Mưa: <b>${luuLuongMua.toFixed(1)}mm</b></div>
+                    <div class="popup-grid-item threshold">🛡️ Ngưỡng an toàn: <b id="lblNguong" class="text-green">${nguong.toLocaleString()}</b></div>
                 </div>
-                <div style="background:#fff0f0; padding:10px; margin-top:10px; border:1px solid #ffccc7;">
+                <div class="popup-sim-box">
                     <label><b>Xả lũ (m³/s):</b></label>
-                    <input type="number" id="inpXa" value="${nguong + 500}" style="width:100%; padding:5px; margin-top:5px;">
+                    <input type="number" id="inpXa" value="${nguong + 500}" class="popup-input">
                     <button class="sim-btn" onclick="chaySim(${doCao})">CHẠY MÔ PHỎNG</button>
                 </div>
             </div>
@@ -372,17 +339,6 @@
       } else {
         dangerLayer.clearLayers();
         // Dữ liệu tọa độ các vùng nguy hiểm (demo
-        const dangerCoords = {
-          "Thừa Thiên Huế": [16.4637, 107.5909],
-          "Quảng Trị": [16.8500, 107.1000],
-          "Quảng Bình": [17.4833, 106.6000],
-          "Hà Tĩnh": [18.3333, 105.9000],
-          "Nghệ An": [19.2500, 104.8000],
-          "Quảng Nam": [15.5667, 107.9667],
-          "Phú Yên": [13.0833, 109.0833],
-          "Khánh Hoà": [12.2500, 109.1833],
-          "Bình Định": [13.7833, 109.2167]
-        };
 
         LIST_DANGER_AREAS.forEach(areaName => {
           const coords = dangerCoords[areaName];
@@ -512,6 +468,16 @@
       modalImg.src = src;
     }
 
+    // Hàm xử lý khi đổi đập trong popup
+    function doiDap(dapId, doCao, luuLuongMua) {
+      console.log("Đổi đập:", dapId);
+    }
+
+    // Hàm chạy mô phỏng
+    function chaySim(doCao) {
+      const xaLu = document.getElementById('inpXa').value;
+      alert(`Đang chạy mô phỏng với độ cao ${doCao}m và xả lũ ${xaLu} m³/s`);
+    }
 
     // ========== SỰ KIỆN ==========
     document.addEventListener("DOMContentLoaded", function () {

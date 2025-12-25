@@ -374,6 +374,7 @@ body {
     border-radius: 12px;
     margin-bottom: 15px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
 }
 
 .dam-detail-title {
@@ -424,4 +425,149 @@ body {
         right: 20px;
         top: auto;
     }
+}
+
+/* ========== MODAL PHÓNG TO ẢNH ========== */
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    padding-top: 50px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 900px;
+    max-height: 90vh;
+    object-fit: contain;
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@keyframes zoom {
+    from {
+        transform: scale(0)
+    }
+
+    to {
+        transform: scale(1)
+    }
+}
+
+/* ========== POPUP STYLES (Moved from HTML) ========== */
+.popup-location {
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.popup-danger {
+    color: red;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.popup-safe {
+    color: green;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.popup-header {
+    margin: 0;
+    color: #0066ff;
+    border-bottom: 2px solid #ddd;
+}
+
+.popup-section {
+    margin-top: 10px;
+}
+
+.popup-label {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.popup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.popup-grid-item {
+    padding: 5px;
+}
+
+.popup-grid-item.height {
+    background: #f5f5f5;
+}
+
+.popup-grid-item.rain {
+    background: #e6f7ff;
+}
+
+.popup-grid-item.threshold {
+    background: #eeffee;
+    grid-column: span 2;
+}
+
+.text-green {
+    color: green;
+}
+
+.popup-sim-box {
+    background: #fff0f0;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ffccc7;
+}
+
+.popup-input {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+.sim-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    background: #0066ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.sim-btn:hover {
+    background: #0055cc;
 }
