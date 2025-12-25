@@ -315,9 +315,11 @@
       legendVisible = panel.classList.contains("active");
 
       if (legendVisible) {
-        toggleBtn.innerHTML = '<i class="fas fa-times"></i> Đóng';
+        toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
+        toggleBtn.style.padding = "12px";
       } else {
         toggleBtn.innerHTML = '<i class="fas fa-layer-group"></i> Hiện chú thích';
+        toggleBtn.style.padding = "";
       }
     }
 
