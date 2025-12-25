@@ -54,3 +54,17 @@ const LIST_DANGER_AREAS = [
     "Hà Tĩnh", "Nghệ An", "Quảng Nam",
     "Phú Yên", "Khánh Hoà", "Bình Định"
 ];
+
+const VIETNAM_PROVINCES = [
+    { name: "Thừa Thiên Huế", type: "Tỉnh", lat: 16.4637, lng: 107.5909 },
+    { name: "Quảng Trị", type: "Tỉnh", lat: 16.8500, lng: 107.1000 },
+    { name: "Quảng Bình", type: "Tỉnh", lat: 17.4833, lng: 106.6000 },
+    { name: "Hà Tĩnh", type: "Tỉnh", lat: 18.3333, lng: 105.9000 },
+    { name: "Nghệ An", type: "Tỉnh", lat: 19.2500, lng: 104.8000 },
+    { name: "Quảng Nam", type: "Tỉnh", lat: 15.5667, lng: 107.9667 },
+    { name: "Phú Yên", type: "Tỉnh", lat: 13.0833, lng: 109.0833 },
+    { name: "Khánh Hoà", type: "Tỉnh", lat: 12.2500, lng: 109.1833 },
+    { name: "Bình Định", type: "Tỉnh", lat: 13.7833, lng: 109.2167 },
+    { name: "Hà Nội", type: "Thành phố", lat: 21.0285, lng: 105.8542 },
+    { name: "Hồ Chí Minh", type: "Thành phố", lat: 10.8231, lng: 106.6297 }
+];
