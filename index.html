@@ -142,6 +142,7 @@
   <!-- ========== TẢI FILE DỮ LIỆU ========== -->
   <script src="js/data.js"></script>
   <script src="js/logic.js"></script>
+  <script src="js/main.js"></script>
 
   <script>
     // ========== BIẾN TOÀN CỤC ==========
@@ -200,16 +201,16 @@
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
 
-        // ========== KHU VỰC TÍCH HỢP DỮ LIỆU API (ĐỂ TRỐNG) ==========
-        let doCao = 0;
-        let luuLuongMua = 0;
-        let nguong = 0;
+        // ========== GỌI API TỪ MAIN.JS ==========
+        const doCao = await getDoCao(lat, lng);
+        const luuLuongMua = await getLuuLuongMua(lat, lng);
+        const nguong = getNguongAnToan(doCao, luuLuongMua);
 
 
         // Xử lý xác định vùng nguy hiểm dựa trên khoảng cách
         let detectedLocation = "Vùng lân cận";
         let isDangerous = false;
-        const detectionRadius = 25000; // 25km
+        const detectionRadius = 50000; // 50km
 
         for (const area of LIST_DANGER_AREAS) {
           if (dangerCoords[area]) {
