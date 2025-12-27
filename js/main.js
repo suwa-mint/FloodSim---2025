@@ -1,11 +1,11 @@
-// 1. CAU HINH CO BAN
+// 1. cau hinh co ban cho map
 const CONFIG = {
     vietnamBounds: [[6, 80], [25, 200]],
     mapCenter: [16.0, 106.0],
     zoom: 6,
 };
 
-// bien toan cuc de quan ly may cai layer
+// bien toan cuc, dung de quan ly may cai layer vs marker
 let map;
 let legendVisible = false;
 let damLayers = {
@@ -13,29 +13,15 @@ let damLayers = {
     medium: L.layerGroup(),
     reservoir: L.layerGroup()
 };
+// trang thai bat tat layer
 let damStates = { large: false, medium: false, reservoir: false };
 let dangerLayer = L.layerGroup();
 let isDangerLayerVisible = false;
 let currentMarker = null;
 
-// toa do cung may vung nguy hiem lay tu code thk H
-const dangerCoords = {
-    "Thừa Thiên Huế": [16.4637, 107.5909],
-    "Quảng Trị": [16.8500, 107.1000],
-    "Quảng Bình": [17.4833, 106.6000],
-    "Hà Tĩnh": [18.3333, 105.9000],
-    "Nghệ An": [19.2500, 104.8000],
-    "Quảng Nam": [15.5667, 107.9667],
-    "Phú Yên": [13.0833, 109.0833],
-    "Khánh Hoà": [12.2500, 109.1833],
-    "Bình Định": [13.7833, 109.2167]
-};
+// P2: logic tinh toan
 
-// ================================================================
-// PHAN 2: LOGIC TINH TOAN (CODE CUA THK DAT)
-// ================================================================
-
-// cong thuc tinh khoang cach giua 2 diem tren ban do (km)
+// cong thuc tinh khoang cach giua 2 diem (haversine)
 function Haversine(lat1, lon1, lat2, lon2) {
     const R = 6371; 
     const toRad = deg => deg * Math.PI / 180;
@@ -48,12 +34,12 @@ function Haversine(lat1, lon1, lat2, lon2) {
     return Math.round(R * c * 1000) / 1000;
 }
 
-// ham tim 3 cai dap gan nhat de nhet vo popup
+// loc ra 3 thang gan nhat de nhet vo cai select
 function threeNearest(lat1, lon1) {
-    // check xem co file data chua, ko co la cook
+    // ko co data thi cook
     if (typeof listdap === 'undefined') return [];
     
-    // tao ban sao roi tinh khoang cach
+    // map qua tung thang de tinh khoang cach
     const distances = listdap.map(dap => {
         return {
             ...dap,
@@ -61,18 +47,14 @@ function threeNearest(lat1, lon1) {
         };
     });
     
-    // sap xep tu gan toi xa
+    // sap xep tang dan
     distances.sort((a, b) => a.distance - b.distance);
-    
-    // lay 3 thang dau tien
     return distances.slice(0, 3);
 }
 
-// ================================================================
-// PHAN 3: GIAO DIEN MAP (CODE CUA THK HIEP)
-// ================================================================
+// P3: giao dien map
 
-// khoi tao cai ban do len
+// khoi tao map, load tile tu osm
 function initializeMap() {
     map = L.map("map", {
         center: CONFIG.mapCenter,
@@ -82,15 +64,14 @@ function initializeMap() {
         minZoom: 6,
     });
 
-    // load map nen tu openstreetmap
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap | FloodSim',
         maxZoom: 20, noWrap: true, bounds: CONFIG.vietnamBounds,
     }).addTo(map);
 
-    // --- SU KIEN CLICK VAO MAP (DOAN NAY GOP CODE 2 DUA LAI) ---
-    map.on('click', function (e) {
-        // xoa cai marker cu di cho do roi mat
+    // --- su kien click vao map, doan nay xu ly hoi nhieu ---
+    map.on('click', async function (e) {
+        // xoa cai marker cu di cho do roi
         if (currentMarker) {
             map.removeLayer(currentMarker);
             currentMarker = null;
@@ -99,20 +80,50 @@ function initializeMap() {
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
 
-        // may thong so gia lap, sau nay thk D no code logic thi thay vao
+        // hien cai popup loading gia bo trong luc doi api
+        const loadingPopup = L.popup()
+            .setLatLng(e.latlng)
+            .setContent('<div style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu thời tiết...</div>')
+            .openOn(map);
+
+        // -- GOI API OPEN-METEO --
         let doCao = 0;
         let luuLuongMua = 0;
-        let nguong = 0;
+        let nguong = 2000; // mac dinh
 
-        // logic check vung nguy hiem dua tren data cua thk H
+        try {
+            // api lay thoi tiet vs do cao
+            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=rain,showers&timezone=auto&forecast_days=1`;
+            const elevationUrl = `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`;
+
+            // fetch 2 cai 1 luc cho le
+            const [wRes, eRes] = await Promise.all([
+                fetch(weatherUrl),
+                fetch(elevationUrl)
+            ]);
+
+            const wData = await wRes.json();
+            const eData = await eRes.json();
+
+            // gan data vao bien
+            if (eData.elevation) doCao = Math.round(eData.elevation[0]);
+            if (wData.current) {
+                luuLuongMua = (wData.current.rain || 0) + (wData.current.showers || 0);
+            }
+
+        } catch (err) {
+            // lo ma api loi thi bao log thoi, dung de chet web
+            console.error("Lỗi gọi API thời tiết:", err);
+        }
+
+        // -- CHECK VUNG NGUY HIEM --
         let detectedLocation = "Vùng lân cận";
         let isDangerous = false;
         const detectionRadius = 25000; // 25km
 
-        // lay danh sach tinh tu file data.js
+        // lay list tu data.js qua
         const areasToCheck = (typeof LIST_DANGER_AREAS !== 'undefined') ? LIST_DANGER_AREAS : Object.keys(dangerCoords);
 
-        // quet xem diem click co nam trong vung nguy hiem ko
         for (const area of areasToCheck) {
             if (dangerCoords[area]) {
                 if (map.distance([lat, lng], dangerCoords[area]) <= detectionRadius) {
@@ -123,7 +134,7 @@ function initializeMap() {
             }
         }
 
-        // tao html canh bao xanh do
+        // render cai canh bao xanh do
         let htmlCanhBao = `<div class="popup-location">Vị trí: <b>${detectedLocation}</b></div>`;
         if (isDangerous) {
             htmlCanhBao += `<div style="color:red; font-weight:bold; margin-bottom:5px;">⚠️ Khu vực nguy hiểm cao</div>`;
@@ -131,15 +142,13 @@ function initializeMap() {
             htmlCanhBao += `<div style="color:green; font-weight:bold; margin-bottom:5px;">✅ Khu vực tương đối an toàn</div>`;
         }
 
-        // GOI HAM CUA THK D: tim 3 dap gan nhat
+        // -- TIM DAP GAN NHAT --
         const nearestDams = threeNearest(lat, lng);
-
-        // tao danh sach option cho cai select
         let options = nearestDams.map((d, index) =>
             `<option value="${d.id}" ${index === 0 ? 'selected' : ''}>${d.ten} (${d.distance.toFixed(1)}km)</option>`
         ).join('');
 
-        // dung html cho cai popup
+        // -- tao html cho popup, doan nay css ben style.css lo r --
         var popupHTML = `
             <div class="info-panel" style="min-width:280px">
                 <h3 style="color:#0066ff; border-bottom:1px solid #ddd; margin:0 0 10px 0; padding-bottom:5px;">Phân Tích Đa Nguồn</h3>
@@ -162,24 +171,23 @@ function initializeMap() {
                         <button onclick="chaySim(${doCao})" style="flex:1; background:#ff4444; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">CHẠY MÔ PHỎNG</button>
                     </div>
                 </div>
+                <div style="margin-top:5px; font-size:10px; color:#888; text-align:right;">*Dữ liệu từ Open-Meteo API</div>
             </div>
         `;
 
-        // hien cai marker va popup len map
+        // hien popup moi len, de cai loading
         currentMarker = L.marker([lat, lng]).addTo(map).bindPopup(popupHTML).openPopup();
     });
 }
 
-// ve may cai cham tron bieu thi dap thuy dien
+// render may cai cham tron tren map
 function initializeDams() {
-    // ko co data thi thoi nghi khoe
     if (typeof listdap === 'undefined') return;
 
     listdap.forEach(dap => {
         let color = '#0066ff', targetLayer = damLayers.reservoir;
         let loai = 'Hồ';
 
-        // phan loai mau sac theo dung tich
         if (dap.dung_tich >= 1000) {
             loai = 'Lớn';
             color = '#33ebff';
@@ -190,7 +198,6 @@ function initializeDams() {
             targetLayer = damLayers.medium;
         }
 
-        // ve cham tron
         L.circleMarker([dap.lat, dap.lng], {
             radius: 8, fillColor: color, color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
         }).bindPopup(`
@@ -209,11 +216,8 @@ function initializeDams() {
     });
 }
 
-// ================================================================
-// PHAN 4: MAY HAM TIEN ICH & UI (CODE CUA THK HIEP)
-// ================================================================
+// p4: UI AND HELPER
 
-// bat tat cai bang chu thich ben phai
 function toggleLegendPanel() {
     const panel = document.getElementById("legendPanel");
     const toggleBtn = document.getElementById("legendToggle");
@@ -229,7 +233,6 @@ function toggleLegendPanel() {
     }
 }
 
-// bat tat cac layer dap tren map
 function toggleDamLayer(type, element) {
     if (damStates[type]) {
         map.removeLayer(damLayers[type]);
@@ -241,14 +244,13 @@ function toggleDamLayer(type, element) {
     damStates[type] = !damStates[type];
 }
 
-// bat tat vung nguy hiem (vong tron do)
+// bat tat layer vung nguy hiem
 function toggleDangerLayer(element) {
     if (isDangerLayerVisible) {
         map.removeLayer(dangerLayer);
         element.style.backgroundColor = "#f8faff";
     } else {
         dangerLayer.clearLayers();
-        // lay data tu file data.js
         const areas = (typeof LIST_DANGER_AREAS !== 'undefined') ? LIST_DANGER_AREAS : Object.keys(dangerCoords);
         
         areas.forEach(areaName => {
@@ -265,7 +267,7 @@ function toggleDangerLayer(element) {
     isDangerLayerVisible = !isDangerLayerVisible;
 }
 
-// --- chuc nang tim kiem (ket hop local + api osm) ---
+// --- chuc nang tim kiem ---
 async function performSearch() {
     const query = document.getElementById("searchInput").value.trim();
     const results = document.getElementById("searchResults");
@@ -278,7 +280,7 @@ async function performSearch() {
     const normalizedQuery = normalizeString(query);
     let html = "";
 
-    // 1. tim trong listdap truoc (local)
+    // 1. tim trong local
     if (typeof listdap !== 'undefined') {
         const damResults = listdap.filter(d =>
             normalizeString(d.ten).includes(normalizedQuery) ||
@@ -299,7 +301,7 @@ async function performSearch() {
         }
     }
 
-    // 2. goi api openstreetmap de tim dia diem khac
+    // 2. tim osm (api)
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=3`);
         const osmResults = await response.json();
@@ -323,20 +325,17 @@ async function performSearch() {
     results.innerHTML = html;
 }
 
-// --- may cai ham phu tro linh tinh ---
+// --- may cai ham linh tinh ---
 function normalizeString(str) {
-    // xoa dau tieng viet de tim kiem cho de
     return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d") : "";
 }
 
-// bay den dia diem duoc chon
 function flyTo(lat, lng, title) {
     map.setView([lat, lng], 12);
     document.getElementById("searchResults").style.display = "none";
     if (title) document.getElementById("searchInput").value = title;
 }
 
-// mo cai popup xem anh chi tiet dap
 function openDamDetail(damId) {
     const dap = listdap.find(d => d.id === damId);
     if (dap) {
@@ -347,33 +346,27 @@ function openDamDetail(damId) {
     }
 }
 
-// dong popup chi tiet
 function closeDamDetail() { document.getElementById('damDetailPanel').style.display = 'none'; }
 
-// phong to anh len
 function openImageModal(src) {
     document.getElementById("imageModal").style.display = "block";
     document.getElementById("modalImg").src = src;
 }
 
-// ham gia lap (stub) de khoi bao loi
+// ham gia lap
 function doiDap(dapId, doCao, luuLuongMua) { console.log("Đổi đập:", dapId); }
 function chaySim(doCao) { 
     const xaLu = document.getElementById('inpXa').value;
     alert(`Đang chạy mô phỏng xả lũ: ${xaLu} m³/s`); 
 }
 
-// ================================================================
-// PHAN 5: CHAY CHUONG TRINH (ON LOAD)
-// ================================================================
+// P5: chay chuong trinh
 document.addEventListener("DOMContentLoaded", function () {
-    // gan su kien click cho may cai nut
     document.getElementById("legendToggle").addEventListener("click", toggleLegendPanel);
     document.getElementById("searchInput").addEventListener("input", function () {
         if (!this.value.trim()) document.getElementById("searchResults").style.display = "none";
     });
 
-    // chay khoi tao map va data
     initializeMap();
     initializeDams();
 });
