@@ -14,14 +14,6 @@
   <!-- File CSS  -->
   <link rel="stylesheet" href="css/style.css">
 
-  <script>
-    // ========== CẤU HÌNH HỆ THỐNG ==========
-    const CONFIG = {
-      vietnamBounds: [[6, 80], [25, 200]],
-      mapCenter: [16.0, 106.0],
-      zoom: 6,
-    };
-  </script>
 </head>
 
 <body>
@@ -128,7 +120,7 @@
   <div class="dam-detail-panel" id="damDetailPanel">
     <button class="close-detail" onclick="closeDamDetail()">&times;</button>
     <img src="" alt="" class="dam-detail-image" id="damDetailImage" onclick="openImageModal(this.src)"
-      title="Nhấn để phóng to">
+      style="cursor: pointer;" title="Nhấn để phóng to">
     <div class="dam-detail-title" id="damDetailTitle"></div>
     <div class="dam-detail-info" id="damDetailInfo"></div>
   </div>
@@ -144,357 +136,43 @@
   <script src="js/logic.js"></script>
   <script src="js/main.js"></script>
 
+  <!-- Code injected by live-server -->
   <script>
-    // ========== BIẾN TOÀN CỤC ==========
-    let map;
-    let legendVisible = false;
-    let damLayers = {
-      large: L.layerGroup(),
-      medium: L.layerGroup(),
-      reservoir: L.layerGroup()
-    };
-    let damStates = { large: false, medium: false, reservoir: false };
-    let dangerLayer = L.layerGroup();
-    let isDangerLayerVisible = false;
-    let currentMarker = null;
-    let latestClickTime = 0;
-
-    // Tọa độ các vùng nguy hiểm (Dùng chung cho click và layer)
-    const dangerCoords = {
-      "Thừa Thiên Huế": [16.4637, 107.5909],
-      "Quảng Trị": [16.8500, 107.1000],
-      "Quảng Bình": [17.4833, 106.6000],
-      "Hà Tĩnh": [18.3333, 105.9000],
-      "Nghệ An": [19.2500, 104.8000],
-      "Quảng Nam": [15.5667, 107.9667],
-      "Phú Yên": [13.0833, 109.0833],
-      "Khánh Hoà": [12.2500, 109.1833],
-      "Bình Định": [13.7833, 109.2167]
-    };
-
-    // ========== KHỞI TẠO BẢN ĐỒ ==========
-    function initializeMap() {
-      map = L.map("map", {
-        center: CONFIG.mapCenter,
-        zoom: CONFIG.zoom,
-        maxBounds: L.latLngBounds(CONFIG.vietnamBounds),
-        maxZoom: 20,
-        minZoom: 6,
-      });
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap | FloodSim',
-        maxZoom: 20,
-        noWrap: true,
-        bounds: CONFIG.vietnamBounds,
-      }).addTo(map);
-
-      // Sự kiện click bản đồ để mô phỏng
-      map.on('click', async function (e) {
-        // Xóa marker cũ nếu có
-        if (currentMarker) {
-          map.removeLayer(currentMarker);
-          currentMarker = null;
-          return;
-        }
-
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-
-        // ========== GỌI API TỪ MAIN.JS ==========
-        const doCao = await getDoCao(lat, lng);
-        const luuLuongMua = await getLuuLuongMua(lat, lng);
-        const nguong = getNguongAnToan(doCao, luuLuongMua);
-
-
-        // Xử lý xác định vùng nguy hiểm dựa trên khoảng cách
-        let detectedLocation = "Vùng lân cận";
-        let isDangerous = false;
-        const detectionRadius = 50000; // 50km
-
-        for (const area of LIST_DANGER_AREAS) {
-          if (dangerCoords[area]) {
-            if (map.distance([lat, lng], dangerCoords[area]) <= detectionRadius) {
-              detectedLocation = area;
-              isDangerous = true;
-              break;
+    // <![CDATA[  <-- For SVG support
+    if ('WebSocket' in window) {
+      (function () {
+        function refreshCSS() {
+          var sheets = [].slice.call(document.getElementsByTagName("link"));
+          var head = document.getElementsByTagName("head")[0];
+          for (var i = 0; i < sheets.length; ++i) {
+            var elem = sheets[i];
+            var parent = elem.parentElement || head;
+            parent.removeChild(elem);
+            var rel = elem.rel;
+            if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+              var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+              elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
             }
+            parent.appendChild(elem);
           }
         }
-
-        let htmlCanhBao = `<div class="popup-location">Vị trí: <b>${detectedLocation}</b></div>`;
-        if (isDangerous) {
-          htmlCanhBao += `<div class="popup-danger">⚠️ Khu vực nguy hiểm cao</div>`;
-        } else {
-          htmlCanhBao += `<div class="popup-safe">✅ Khu vực tương đối an toàn</div>`;
+        var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+        var address = protocol + window.location.host + window.location.pathname + '/ws';
+        var socket = new WebSocket(address);
+        socket.onmessage = function (msg) {
+          if (msg.data == 'reload') window.location.reload();
+          else if (msg.data == 'refreshcss') refreshCSS();
+        };
+        if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+          console.log('Live reload enabled.');
+          sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
         }
-
-        // Tìm 3 đập gần nhất (Sử dụng hàm có sẵn trong logic.js)
-        const nearestDams = threeNearest(lat, lng);
-
-        // Tạo options cho select
-        let options = nearestDams.map((d, index) =>
-          `<option value="${d.id}" ${index === 0 ? 'selected' : ''}>${d.ten} (${d.distance.toFixed(1)}km)</option>`
-        ).join('');
-
-        var popupHTML = `
-            <div class="info-panel">
-                <h3 class="popup-header">Phân Tích Đa Nguồn</h3>
-                ${htmlCanhBao} <div class="popup-section">
-                    <label class="popup-label">Nguồn xả lũ giả lập:</label>
-                    <select id="selectDap" onchange="doiDap(this.value, ${doCao}, ${luuLuongMua})">${options}</select>
-                </div>
-                <div class="popup-grid">
-                    <div class="popup-grid-item height">⛰️ Độ cao: <b>${doCao}m</b></div>
-                    <div class="popup-grid-item rain">🌧️ Mưa: <b>${luuLuongMua.toFixed(1)}mm</b></div>
-                    <div class="popup-grid-item threshold">🛡️ Ngưỡng an toàn: <b id="lblNguong" class="text-green">${nguong.toLocaleString()}</b></div>
-                </div>
-                <div class="popup-sim-box">
-                    <label><b>Xả lũ (m³/s):</b></label>
-                    <input type="number" id="inpXa" value="${nguong + 500}" class="popup-input">
-                    <button class="sim-btn" onclick="chaySim(${doCao})">CHẠY MÔ PHỎNG</button>
-                </div>
-            </div>
-        `;
-
-        // Hiển thị marker tại điểm click và mở popup
-        currentMarker = L.marker([lat, lng]).addTo(map).bindPopup(popupHTML).openPopup();
-      });
+      })();
     }
-    // ========== KHỞI TẠO CÁC ĐẬP ==========
-    function initializeDams() {
-      listdap.forEach(dap => {
-        let color = '#0066ff', targetLayer = damLayers.reservoir;
-        let loai = 'Hồ';
-
-        if (dap.dung_tich >= 1000) {
-          loai = 'Lớn';
-          color = '#33ebff';
-          targetLayer = damLayers.large;
-        } else if (dap.dung_tich >= 100) {
-          loai = 'Vừa';
-          color = '#ff9900';
-          targetLayer = damLayers.medium;
-        }
-
-        L.circleMarker([dap.lat, dap.lng], {
-          radius: 8,
-          fillColor: color,
-          color: "#fff",
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.9
-        })
-          .bindPopup(`
-  <img src="${dap.anh}" class="dam-popup-image" onclick="openDamDetail('${dap.id}')" title="Nhấn để xem chi tiết" onerror="this.style.display='none'">
-  <div class="dam-info">
-    <strong>${dap.ten}</strong>
-    <div class="dam-info-row">
-      <span class="dam-info-label">Loại:</span>
-      <span class="dam-info-value">${loai}</span>
-    </div>
-    <div class="dam-info-row">
-      <span class="dam-info-label">Sông:</span>
-      <span class="dam-info-value">${dap.song}</span>
-    </div>
-    <div class="dam-info-row">
-      <span class="dam-info-label">Dung tích:</span>
-      <span class="dam-info-value">${dap.dung_tich} triệu m³</span>
-    </div>
-  </div>
-  `)
-          .addTo(targetLayer);
-      });
+    else {
+      console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
     }
-
-    // ========== ĐIỀU KHIỂN GIAO DIỆN ==========
-    function toggleLegendPanel() {
-      const panel = document.getElementById("legendPanel");
-      const toggleBtn = document.getElementById("legendToggle");
-
-      panel.classList.toggle("active");
-      legendVisible = panel.classList.contains("active");
-
-      if (legendVisible) {
-        toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
-        toggleBtn.style.padding = "12px";
-      } else {
-        toggleBtn.innerHTML = '<i class="fas fa-layer-group"></i> Hiện chú thích';
-        toggleBtn.style.padding = "";
-      }
-    }
-
-    function toggleDamLayer(type, element) {
-      if (damStates[type]) {
-        map.removeLayer(damLayers[type]);
-        element.style.backgroundColor = "#f8faff";
-      } else {
-        map.addLayer(damLayers[type]);
-        element.style.backgroundColor = "#e0f7fa";
-      }
-      damStates[type] = !damStates[type];
-    }
-
-    function toggleDangerLayer(element) {
-      if (isDangerLayerVisible) {
-        map.removeLayer(dangerLayer);
-        element.style.backgroundColor = "#f8faff";
-      } else {
-        dangerLayer.clearLayers();
-        // Dữ liệu tọa độ các vùng nguy hiểm (demo
-
-        LIST_DANGER_AREAS.forEach(areaName => {
-          const coords = dangerCoords[areaName];
-          if (coords) {
-            L.circle(coords, {
-              color: '#ff0000',
-              fillColor: '#ff0000',
-              fillOpacity: 0.5,
-              radius: 25000
-            }).bindPopup(`<b>${areaName}</b><br>Khu vực nguy cơ ngập cao`)
-              .addTo(dangerLayer);
-          }
-        });
-        map.addLayer(dangerLayer);
-        element.style.backgroundColor = "#e0f7fa";
-      }
-      isDangerLayerVisible = !isDangerLayerVisible;
-    }
-
-    // ========== CHỨC NĂNG TÌM KIẾM ==========
-    async function performSearch() {
-      const query = document.getElementById("searchInput").value.trim();
-      const results = document.getElementById("searchResults");
-
-      if (!query) {
-        results.style.display = "none";
-        return;
-      }
-
-      const normalizedQuery = normalizeString(query);
-      let html = "";
-
-      // Tìm đập thủy điện (Local)
-      const damResults = listdap.filter(d =>
-        normalizeString(d.ten).includes(normalizedQuery) ||
-        normalizeString(d.song).includes(normalizedQuery)
-      );
-
-      if (damResults.length > 0) {
-        html += '<div style="padding:8px 12px;"><strong>Thủy điện:</strong></div>';
-        damResults.forEach(d => {
-          html += `
-            <div class="search-result-item" data-lat="${d.lat}" data-lng="${d.lng}">
-              <i class="fas fa-water"></i>
-              <div>
-                <div class="result-title">${d.ten}</div>
-                <div class="result-subtitle">${d.song}</div>
-              </div>
-            </div>`;
-        });
-      }
-
-      // Tìm địa điểm qua OpenStreetMap (Remote)
-      try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=5`);
-        const osmResults = await response.json();
-
-        if (osmResults.length > 0) {
-          html += '<div style="padding:8px 12px;"><strong>Địa điểm (OpenStreetMap):</strong></div>';
-          osmResults.forEach(p => {
-            html += `
-              <div class="search-result-item" data-lat="${p.lat}" data-lng="${p.lon}">
-                <i class="fas fa-map-marker-alt"></i>
-                <div>
-                  <div class="result-title">${p.display_name.split(',')[0]}</div>
-                  <div class="result-subtitle" style="font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">${p.display_name}</div>
-                </div>
-              </div>`;
-          });
-        }
-      } catch (e) {
-        console.error("Lỗi tìm kiếm OSM:", e);
-      }
-
-      if (!html) {
-        html = '<div class="no-results">Không tìm thấy kết quả</div>';
-      }
-
-      results.innerHTML = html;
-      results.style.display = "block";
-
-      // Thêm sự kiện click cho kết quả
-      results.querySelectorAll(".search-result-item").forEach(item => {
-        item.addEventListener("click", function () {
-          const lat = parseFloat(this.dataset.lat);
-          const lng = parseFloat(this.dataset.lng);
-          if (!isNaN(lat) && !isNaN(lng)) {
-            map.setView([lat, lng], 12);
-            results.style.display = "none";
-          }
-        });
-      });
-    }
-
-
-    // ========== HÀM TIỆN ÍCH ==========
-    function normalizeString(str) {
-      return str
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/đ/g, "d");
-    }
-
-    function closeDamDetail() {
-      document.getElementById('damDetailPanel').style.display = 'none';
-    }
-
-    function openDamDetail(damId) {
-      const dap = listdap.find(d => d.id === damId);
-      if (dap) {
-        document.getElementById('damDetailImage').src = dap.anh;
-        document.getElementById('damDetailTitle').innerText = dap.ten;
-        document.getElementById('damDetailInfo').innerHTML = `
-          <p><strong>Sông:</strong> ${dap.song}</p>
-      
-        `;
-        document.getElementById('damDetailPanel').style.display = 'block';
-      }
-    }
-
-    // Hàm mở modal phóng to ảnh
-    function openImageModal(src) {
-      const modal = document.getElementById("imageModal");
-      const modalImg = document.getElementById("modalImg");
-      modal.style.display = "block";
-      modalImg.src = src;
-    }
-
-    // Hàm xử lý khi đổi đập trong popup
-    function doiDap(dapId, doCao, luuLuongMua) {
-      console.log("Đổi đập:", dapId);
-    }
-
-    // Hàm chạy mô phỏng
-    function chaySim(doCao) {
-      const xaLu = document.getElementById('inpXa').value;
-      alert(`Đang chạy mô phỏng với độ cao ${doCao}m và xả lũ ${xaLu} m³/s`);
-    }
-
-    // ========== SỰ KIỆN ==========
-    document.addEventListener("DOMContentLoaded", function () {
-      document.getElementById("legendToggle").addEventListener("click", toggleLegendPanel);
-
-      document.getElementById("searchInput").addEventListener("input", function () {
-        if (!this.value.trim()) {
-          document.getElementById("searchResults").style.display = "none";
-        }
-      });
-
-      initializeMap();
-      initializeDams();
-    });
+    // ]]>
   </script>
 </body>
 
