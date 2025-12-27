@@ -1,77 +1,70 @@
-// 1. cau hinh co ban cho map
+// 1. CAU HINH
 const CONFIG = {
     vietnamBounds: [[6, 80], [25, 200]],
     mapCenter: [16.0, 106.0],
     zoom: 6,
 };
 
-// bien toan cuc, dung de quan ly may cai layer vs marker
+// Bien toan cuc
 let map;
-let legendVisible = false;
-let damLayers = {
-    large: L.layerGroup(),
-    medium: L.layerGroup(),
-    reservoir: L.layerGroup()
+let damLayers = { 
+    large: L.layerGroup(), 
+    medium: L.layerGroup(), 
+    reservoir: L.layerGroup() 
 };
-// trang thai bat tat layer
 let damStates = { large: false, medium: false, reservoir: false };
 let dangerLayer = L.layerGroup();
 let isDangerLayerVisible = false;
 let currentMarker = null;
 
-// P2: logic tinh toan
+// 2. LOGIC TINH TOAN
 
-// cong thuc tinh khoang cach giua 2 diem (haversine)
+// Tinh khoang cach 2 diem (km)
 function Haversine(lat1, lon1, lat2, lon2) {
     const R = 6371; 
     const toRad = deg => deg * Math.PI / 180;
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
-    const a = Math.sin(dLat / 2) ** 2 +
-              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-              Math.sin(dLon / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Math.round(R * c * 1000) / 1000;
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1000) / 1000;
 }
 
-// loc ra 3 thang gan nhat de nhet vo cai select
+// Tim 3 dap gan nhat
 function threeNearest(lat1, lon1) {
-    // ko co data thi cook
     if (typeof listdap === 'undefined') return [];
-    
-    // map qua tung thang de tinh khoang cach
-    const distances = listdap.map(dap => {
-        return {
-            ...dap,
-            distance: Haversine(lat1, lon1, dap.lat, dap.lng)
-        };
-    });
-    
-    // sap xep tang dan
+    const distances = listdap.map(dap => ({
+        ...dap,
+        distance: Haversine(lat1, lon1, dap.lat, dap.lng)
+    }));
     distances.sort((a, b) => a.distance - b.distance);
     return distances.slice(0, 3);
 }
 
-// P3: giao dien map
+// Tinh nguong an toan dua theo do cao
+function limitSafe(h) {
+    const maxH = 200;
+    const safeH = h > 0 ? h : 10; 
+    return Math.round((safeH / maxH) * 5000); 
+}
 
-// khoi tao map, load tile tu osm
+// KHOI TAO MAP VA API
 function initializeMap() {
+    // Khoi tao map
     map = L.map("map", {
         center: CONFIG.mapCenter,
         zoom: CONFIG.zoom,
         maxBounds: L.latLngBounds(CONFIG.vietnamBounds),
-        maxZoom: 20,
         minZoom: 6,
     });
 
+    // Lop nen OpenStreetMap
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap | FloodSim',
+        attribution: '&copy; FloodSim Team 2025',
         maxZoom: 20, noWrap: true, bounds: CONFIG.vietnamBounds,
     }).addTo(map);
 
-    // --- su kien click vao map, doan nay xu ly hoi nhieu ---
+    // Su kien CLICK ban do (Quan trong)
     map.on('click', async function (e) {
-        // xoa cai marker cu di cho do roi
         if (currentMarker) {
             map.removeLayer(currentMarker);
             currentMarker = null;
@@ -81,293 +74,204 @@ function initializeMap() {
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
 
-        // hien cai popup loading gia bo trong luc doi api
-        const loadingPopup = L.popup()
+        // Popup loading
+        L.popup()
             .setLatLng(e.latlng)
-            .setContent('<div style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu thời tiết...</div>')
+            .setContent('<div style="text-align:center; padding:10px;"><i class="fas fa-spinner fa-spin"></i> Đang phân tích...</div>')
             .openOn(map);
 
-        // -- GOI API OPEN-METEO --
-        let doCao = 0;
+        // Goi API Open-Meteo
+        let doCao = 15; 
         let luuLuongMua = 0;
-        let nguong = 2000; // mac dinh
-
+        
         try {
-            // api lay thoi tiet vs do cao
-            const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=rain,showers&timezone=auto&forecast_days=1`;
-            const elevationUrl = `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`;
+            const wUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=rain,showers&timezone=auto`;
+            const eUrl = `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`;
 
-            // fetch 2 cai 1 luc cho le
-            const [wRes, eRes] = await Promise.all([
-                fetch(weatherUrl),
-                fetch(elevationUrl)
-            ]);
-
+            const [wRes, eRes] = await Promise.all([fetch(wUrl), fetch(eUrl)]);
             const wData = await wRes.json();
             const eData = await eRes.json();
 
-            // gan data vao bien
             if (eData.elevation) doCao = Math.round(eData.elevation[0]);
-            if (wData.current) {
-                luuLuongMua = (wData.current.rain || 0) + (wData.current.showers || 0);
-            }
-
+            if (wData.current) luuLuongMua = (wData.current.rain || 0) + (wData.current.showers || 0);
         } catch (err) {
-            // lo ma api loi thi bao log thoi, dung de chet web
-            console.error("Lỗi gọi API thời tiết:", err);
+            console.warn("Lỗi API, dùng data mặc định");
         }
 
-        // -- CHECK VUNG NGUY HIEM --
-        let detectedLocation = "Vùng lân cận";
+        // Xu ly Logic
+        const nguong = limitSafe(doCao);
+        const nearestDams = threeNearest(lat, lng);
+
+        // Check vung nguy hiem (tu file data.js)
         let isDangerous = false;
-        const detectionRadius = 25000; // 25km
+        let detectedLocation = "Vùng lân cận";
+        const checkRadius = 50000; // 50km
 
-        // lay list tu data.js qua
-        const areasToCheck = (typeof LIST_DANGER_AREAS !== 'undefined') ? LIST_DANGER_AREAS : Object.keys(dangerCoords);
-
-        for (const area of areasToCheck) {
-            if (dangerCoords[area]) {
-                if (map.distance([lat, lng], dangerCoords[area]) <= detectionRadius) {
-                    detectedLocation = area;
-                    isDangerous = true;
-                    break;
-                }
+        const areas = (typeof dangerCoords !== 'undefined') ? Object.keys(dangerCoords) : [];
+        for (const area of areas) {
+            if (map.distance([lat, lng], dangerCoords[area]) <= checkRadius) {
+                detectedLocation = area;
+                isDangerous = true;
+                break;
             }
         }
 
-        // render cai canh bao xanh do
-        let htmlCanhBao = `<div class="popup-location">Vị trí: <b>${detectedLocation}</b></div>`;
-        if (isDangerous) {
-            htmlCanhBao += `<div style="color:red; font-weight:bold; margin-bottom:5px;">⚠️ Khu vực nguy hiểm cao</div>`;
-        } else {
-            htmlCanhBao += `<div style="color:green; font-weight:bold; margin-bottom:5px;">✅ Khu vực tương đối an toàn</div>`;
-        }
+        // Tao HTML Popup (class theo layout.css)
+        let statusHtml = isDangerous 
+            ? `<div class="popup-danger">⚠️ Vùng Nguy Hiểm (${detectedLocation})</div>` 
+            : `<div class="popup-safe">✅ Khu vực An Toàn</div>`;
 
-        // -- TIM DAP GAN NHAT --
-        const nearestDams = threeNearest(lat, lng);
-        let options = nearestDams.map((d, index) =>
-            `<option value="${d.id}" ${index === 0 ? 'selected' : ''}>${d.ten} (${d.distance.toFixed(1)}km)</option>`
+        let options = nearestDams.map((d, i) => 
+            `<option value="${d.id}" ${i===0?'selected':''}>${d.ten} (${d.distance}km)</option>`
         ).join('');
 
-        // -- tao html cho popup, doan nay css ben style.css lo r --
-        var popupHTML = `
-            <div class="info-panel" style="min-width:280px">
-                <h3 style="color:#0066ff; border-bottom:1px solid #ddd; margin:0 0 10px 0; padding-bottom:5px;">Phân Tích Đa Nguồn</h3>
-                ${htmlCanhBao} 
-                <div style="background:#f9f9f9; padding:10px; border-radius:5px; margin-bottom:10px;">
-                    <label style="font-size:12px; font-weight:bold; color:#555">Nguồn xả lũ giả lập:</label>
-                    <select id="selectDap" onchange="doiDap(this.value, ${doCao}, ${luuLuongMua})" style="width:100%; padding:5px; margin-top:5px; border:1px solid #ccc; border-radius:4px;">
-                        ${options}
-                    </select>
+        const popupHTML = `
+            <div class="info-panel" style="min-width:280px;">
+                <h3 class="popup-header">Phân Tích Thủy Văn</h3>
+                <div class="popup-location">${statusHtml}</div>
+                
+                <div class="popup-section">
+                    <label class="popup-label">Nguồn xả lũ giả định:</label>
+                    <select id="selectDap" class="popup-input" style="border:1px solid #ddd;">${options}</select>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; font-size:12px;">
-                    <div style="background:#fff; padding:5px; border:1px solid #eee; text-align:center;">⛰️ Độ cao: <b>${doCao}m</b></div>
-                    <div style="background:#fff; padding:5px; border:1px solid #eee; text-align:center;">🌧️ Mưa: <b>${luuLuongMua.toFixed(1)}mm</b></div>
-                    <div style="background:#e8f5e9; padding:5px; border:1px solid #c8e6c9; text-align:center; grid-column: span 2;">🛡️ Ngưỡng an toàn: <b style="color:green">${nguong.toLocaleString()}</b></div>
+
+                <div class="popup-grid">
+                    <div class="popup-grid-item height">⛰️ Cao: <b>${doCao}m</b></div>
+                    <div class="popup-grid-item rain">🌧️ Mưa: <b>${luuLuongMua.toFixed(1)}mm</b></div>
+                    <div class="popup-grid-item threshold">🛡️ Ngưỡng: <b class="text-green">${nguong.toLocaleString()}</b></div>
                 </div>
-                <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #ddd;">
-                    <label style="font-size:12px;"><b>Xả lũ (m³/s):</b></label>
-                    <div style="display:flex; gap:5px; margin-top:5px;">
-                        <input type="number" id="inpXa" value="${nguong + 500}" style="width:80px; padding:5px; border:1px solid #ccc; border-radius:4px;">
-                        <button onclick="chaySim(${doCao})" style="flex:1; background:#ff4444; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">CHẠY MÔ PHỎNG</button>
+
+                <div class="popup-sim-box">
+                    <div style="display:flex; gap:5px; align-items: center;">
+                        <input type="number" id="inpXa" value="${nguong + 500}" style="width:80px; padding:5px;">
+                        <button class="sim-btn" onclick="chaySim(${doCao})">MÔ PHỎNG</button>
                     </div>
                 </div>
-                <div style="margin-top:5px; font-size:10px; color:#888; text-align:right;">*Dữ liệu từ Open-Meteo API</div>
             </div>
         `;
 
-        // hien popup moi len, de cai loading
         currentMarker = L.marker([lat, lng]).addTo(map).bindPopup(popupHTML).openPopup();
     });
 }
 
-// render may cai cham tron tren map
+// 4. GIAO DEIN VA TIEN ICH
+
+// Ve cac cham tron dai dien cho dap
 function initializeDams() {
     if (typeof listdap === 'undefined') return;
-
     listdap.forEach(dap => {
         let color = '#0066ff', targetLayer = damLayers.reservoir;
-        let loai = 'Hồ';
-
-        if (dap.dung_tich >= 1000) {
-            loai = 'Lớn';
-            color = '#33ebff';
-            targetLayer = damLayers.large;
-        } else if (dap.dung_tich >= 100) {
-            loai = 'Vừa';
-            color = '#ff9900';
-            targetLayer = damLayers.medium;
-        }
+        if (dap.dung_tich >= 1000) { color = '#33ebff'; targetLayer = damLayers.large; }
+        else if (dap.dung_tich >= 100) { color = '#ff9900'; targetLayer = damLayers.medium; }
 
         L.circleMarker([dap.lat, dap.lng], {
-            radius: 8, fillColor: color, color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
+            radius: 8, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
         }).bindPopup(`
-            <div style="text-align:center">
-                <img src="${dap.anh}" onclick="openDamDetail('${dap.id}')" 
-                     style="width:100%; height:140px; object-fit:cover; border-radius:5px; cursor:pointer; margin-bottom:8px;" 
-                     title="Nhấn để xem chi tiết" onerror="this.style.display='none'">
-                <div style="font-weight:bold; color:#0066ff; font-size:14px;">${dap.ten}</div>
-                <div style="font-size:12px; color:#555; margin-top:5px;">
-                    <div>Loại: ${loai}</div>
-                    <div>Sông: ${dap.song}</div>
-                    <div>Dung tích: <b>${dap.dung_tich}</b> triệu m³</div>
-                </div>
+            <img src="${dap.anh}" class="dam-popup-image" onclick="openDamDetail('${dap.id}')" onerror="this.style.display='none'">
+            <div style="text-align:center;">
+                <div style="color:#0066ff; font-weight:bold;">${dap.ten}</div>
+                <div style="font-size:12px;">Dung tích: ${dap.dung_tich} triệu m³</div>
             </div>
         `).addTo(targetLayer);
     });
 }
 
-// p4: UI AND HELPER
-
+// Bat tat panel chu thich
 function toggleLegendPanel() {
     const panel = document.getElementById("legendPanel");
-    const toggleBtn = document.getElementById("legendToggle");
     panel.classList.toggle("active");
-    legendVisible = panel.classList.contains("active");
-
-    if (legendVisible) {
-        toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
-        toggleBtn.style.padding = "12px";
-    } else {
-        toggleBtn.innerHTML = '<i class="fas fa-layer-group"></i> Hiện chú thích';
-        toggleBtn.style.padding = "";
-    }
+    const btn = document.getElementById("legendToggle");
+    btn.innerHTML = panel.classList.contains("active") 
+        ? '<i class="fas fa-times"></i>' 
+        : '<i class="fas fa-layer-group"></i> Hiện chú thích';
 }
 
-function toggleDamLayer(type, element) {
-    if (damStates[type]) {
-        map.removeLayer(damLayers[type]);
-        element.style.backgroundColor = "#f8faff";
-    } else {
-        map.addLayer(damLayers[type]);
-        element.style.backgroundColor = "#e0f7fa";
-    }
+// Bat tat layer thuy dien
+function toggleDamLayer(type, el) {
+    if (damStates[type]) { map.removeLayer(damLayers[type]); el.style.background = ""; }
+    else { map.addLayer(damLayers[type]); el.style.background = "#e0f7fa"; }
     damStates[type] = !damStates[type];
 }
 
-// bat tat layer vung nguy hiem
-function toggleDangerLayer(element) {
-    if (isDangerLayerVisible) {
-        map.removeLayer(dangerLayer);
-        element.style.backgroundColor = "#f8faff";
-    } else {
+// Bat tat layer vung nguy hiem
+function toggleDangerLayer(el) {
+    if (isDangerLayerVisible) { map.removeLayer(dangerLayer); el.style.background = ""; }
+    else {
         dangerLayer.clearLayers();
-        const areas = (typeof LIST_DANGER_AREAS !== 'undefined') ? LIST_DANGER_AREAS : Object.keys(dangerCoords);
-        
-        areas.forEach(areaName => {
-            const coords = dangerCoords[areaName];
-            if (coords) {
-                L.circle(coords, {
-                    color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.4, radius: 25000
-                }).bindPopup(`<b>${areaName}</b><br>Khu vực nguy cơ ngập cao`).addTo(dangerLayer);
-            }
-        });
+        if(typeof dangerCoords !== 'undefined'){
+            Object.keys(dangerCoords).forEach(area => {
+                L.circle(dangerCoords[area], { color: 'red', radius: 25000, fillOpacity: 0.2 })
+                 .bindPopup(`<b>${area}</b><br>Khu vực rủi ro cao`).addTo(dangerLayer);
+            });
+        }
         map.addLayer(dangerLayer);
-        element.style.backgroundColor = "#ffebeb";
+        el.style.background = "#ffebeb";
     }
     isDangerLayerVisible = !isDangerLayerVisible;
 }
 
-// --- chuc nang tim kiem ---
+// Tim kiem
 async function performSearch() {
     const query = document.getElementById("searchInput").value.trim();
-    const results = document.getElementById("searchResults");
+    const resDiv = document.getElementById("searchResults");
+    if (!query) { resDiv.style.display = "none"; return; }
 
-    if (!query) { results.style.display = "none"; return; }
+    resDiv.innerHTML = '<div style="padding:15px;">Đang tìm...</div>';
+    resDiv.style.display = "block";
 
-    results.innerHTML = '<div style="padding:10px; text-align:center; color:#666"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
-    results.style.display = "block";
-
-    const normalizedQuery = normalizeString(query);
     let html = "";
-
-    // 1. tim trong local
-    if (typeof listdap !== 'undefined') {
-        const damResults = listdap.filter(d =>
-            normalizeString(d.ten).includes(normalizedQuery) ||
-            normalizeString(d.song).includes(normalizedQuery)
-        );
-        if (damResults.length > 0) {
-            html += '<div style="padding:8px 12px; background:#f0f7ff; color:#0066ff; font-weight:bold; font-size:12px;">THỦY ĐIỆN</div>';
-            damResults.forEach(d => {
-                html += `
-                <div class="search-result-item" onclick="flyTo(${d.lat}, ${d.lng}, '${d.ten}')">
-                    <i class="fas fa-water"></i>
-                    <div>
-                        <div class="result-title">${d.ten}</div>
-                        <div class="result-subtitle">${d.song}</div>
-                    </div>
-                </div>`;
-            });
-        }
-    }
-
-    // 2. tim osm (api)
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=3`);
-        const osmResults = await response.json();
-
-        if (osmResults.length > 0) {
-            html += '<div style="padding:8px 12px; background:#f0f7ff; color:#0066ff; font-weight:bold; font-size:12px;">ĐỊA ĐIỂM</div>';
-            osmResults.forEach(p => {
-                html += `
-                <div class="search-result-item" onclick="flyTo(${p.lat}, ${p.lon}, '${p.display_name.split(',')[0]}')">
-                    <i class="fas fa-map-marker-alt" style="color:#ff4444"></i>
-                    <div>
-                        <div class="result-title">${p.display_name.split(',')[0]}</div>
-                        <div class="result-subtitle" style="font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">${p.display_name}</div>
-                    </div>
-                </div>`;
-            });
-        }
-    } catch (e) { console.error("Lỗi tìm kiếm OSM:", e); }
-
-    if (!html) html = '<div class="no-results" style="padding:15px; text-align:center;">Không tìm thấy kết quả</div>';
-    results.innerHTML = html;
-}
-
-// --- may cai ham linh tinh ---
-function normalizeString(str) {
-    return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d") : "";
-}
-
-function flyTo(lat, lng, title) {
-    map.setView([lat, lng], 12);
-    document.getElementById("searchResults").style.display = "none";
-    if (title) document.getElementById("searchInput").value = title;
-}
-
-function openDamDetail(damId) {
-    const dap = listdap.find(d => d.id === damId);
-    if (dap) {
-        document.getElementById('damDetailImage').src = dap.anh;
-        document.getElementById('damDetailTitle').innerText = dap.ten;
-        document.getElementById('damDetailInfo').innerHTML = `<p><strong>Sông:</strong> ${dap.song}</p><p><strong>Dung tích:</strong> ${dap.dung_tich} triệu m³</p>`;
-        document.getElementById('damDetailPanel').style.display = 'block';
-    }
-}
-
-function closeDamDetail() { document.getElementById('damDetailPanel').style.display = 'none'; }
-
-function openImageModal(src) {
-    document.getElementById("imageModal").style.display = "block";
-    document.getElementById("modalImg").src = src;
-}
-
-// ham gia lap
-function doiDap(dapId, doCao, luuLuongMua) { console.log("Đổi đập:", dapId); }
-function chaySim(doCao) { 
-    const xaLu = document.getElementById('inpXa').value;
-    alert(`Đang chạy mô phỏng xả lũ: ${xaLu} m³/s`); 
-}
-
-// P5: chay chuong trinh
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("legendToggle").addEventListener("click", toggleLegendPanel);
-    document.getElementById("searchInput").addEventListener("input", function () {
-        if (!this.value.trim()) document.getElementById("searchResults").style.display = "none";
+    // Tim trong data local
+    const localRes = listdap.filter(d => 
+        d.ten.toLowerCase().includes(query.toLowerCase()) || 
+        d.song.toLowerCase().includes(query.toLowerCase())
+    );
+    localRes.forEach(d => {
+        html += `<div class="search-result-item" onclick="flyTo(${d.lat}, ${d.lng}, '${d.ten}')">
+                    <i class="fas fa-water"></i> <div><div class="result-title">${d.ten}</div><div style="font-size:12px">${d.song}</div></div>
+                 </div>`;
     });
 
+    // Tim qua API OSM
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=3`);
+        const data = await res.json();
+        data.forEach(d => {
+            html += `<div class="search-result-item" onclick="flyTo(${d.lat}, ${d.lon}, '${d.display_name}')">
+                        <i class="fas fa-map-marker-alt"></i> <div><div class="result-title">${d.display_name.split(',')[0]}</div></div>
+                     </div>`;
+        });
+    } catch(e) {}
+
+    resDiv.innerHTML = html || '<div style="padding:15px;">Không tìm thấy kết quả</div>';
+}
+
+function flyTo(lat, lng, name) {
+    map.setView([lat, lng], 12);
+    document.getElementById("searchResults").style.display = "none";
+    document.getElementById("searchInput").value = name;
+}
+
+function chaySim(doCao) {
+    const val = document.getElementById('inpXa').value;
+    alert(`MÔ PHỎNG:\nXả lũ: ${val} m³/s\nĐộ cao: ${doCao}m\n-> Đã gửi cảnh báo về trung tâm!`);
+}
+
+// Xu ly chi tiet dap & modal anh
+function openDamDetail(id) {
+    const d = listdap.find(x => x.id === id);
+    if(d) {
+        document.getElementById('damDetailPanel').style.display = 'block';
+        document.getElementById('damDetailImage').src = d.anh;
+        document.getElementById('damDetailTitle').innerText = d.ten;
+        document.getElementById('damDetailInfo').innerHTML = `<p><strong>Sông:</strong> ${d.song}</p><p><strong>Dung tích:</strong> ${d.dung_tich} triệu m³</p><p><strong>Địa hình:</strong> ${d.terrain}</p>`;
+    }
+}
+function closeDamDetail() { document.getElementById('damDetailPanel').style.display = 'none'; }
+function openImageModal(src) { document.getElementById('imageModal').style.display = 'block'; document.getElementById('modalImg').src = src; }
+
+// KHOI CHAY
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("legendToggle").addEventListener("click", toggleLegendPanel);
     initializeMap();
     initializeDams();
 });
