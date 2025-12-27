@@ -75,6 +75,7 @@ function initializeMap() {
         if (currentMarker) {
             map.removeLayer(currentMarker);
             currentMarker = null;
+            return;
         }
 
         const lat = e.latlng.lat;
