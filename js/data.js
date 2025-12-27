@@ -55,6 +55,8 @@ const dangerCoords = {
     "Huyện Đại Lộc (Quảng Nam)": [15.8744, 108.0839],
     "Huyện Nam Trà My (Quảng Nam)": [15.1972, 108.0875],
     "Huyện Tuy Phước (Bình Định)": [13.8272, 109.1558],
+    "Huyện Tuy Phước (Bình Định)": [13.8272, 109.1558],
+    "Phú Yên": [13.0833, 109.0833] 
 };
 
 const LIST_DANGER_AREAS = Object.keys(dangerCoords);
