@@ -52,3 +52,23 @@ function findDamsInRadius(lat1, lon1, radiusKm) {
     // Sắp xếp kết quả từ gần đến xa
     return results.sort((a, b) => a.distance - b.distance);
 }
+// Tính ngưỡng an toàn
+function limitSafe(h){
+    const k = 1.5;
+    const maxH = 200;
+    const limitsafe = h/maxH * 5000;
+    return limitsafe;
+}
+// tìm bán kính nguy hiểm tại điểm C(lat,lon)
+function riskRadiusAtC(lat, lon){
+    let cnt = 0;
+    for(let i = 0; i < 40; i++){
+        if(Haversine(lat, lon, listdap[i].lat, listdap[i].lng) <= damRiskData[i].riskRadius){
+            cnt++;
+        }
+    }
+    const minnumkm = 3;
+    if(cnt === 0) return 0;
+    let R = (cnt - 1) + minnumkm;
+    return R;
+}
