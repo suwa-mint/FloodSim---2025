@@ -255,9 +255,6 @@ function flyTo(lat, lng, name) {
     document.getElementById("searchInput").value = name;
 }
 // thay logic tinh toan mo phong vao day xoá code cũ
-function chaySim(doCao) {
-    const val = document.getElementById('inpXa').value;
-    alert(`MÔ PHỎNG:\nXả lũ: ${val} m³/s\nĐộ cao: ${doCao}m\n-> Đã gửi cảnh báo về trung tâm!`);
 
 
 // Xu ly chi tiet dap & modal anh
