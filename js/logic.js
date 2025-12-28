@@ -61,7 +61,7 @@ function limitSafe(h){
 }
 // tìm bán kính nguy hiểm tại điểm C(lat,lon)
 function riskRadiusAtC(lat,lon,kc,luongnuoc,h){
-    let ans = luongnuoc -  limitSafe(h);
+    let ans = luongnuoc -  limitSafe(h)*1000;
     if(ans<0) return 0;
-    return ans/1000;
+    return ans/1000000;
 }
