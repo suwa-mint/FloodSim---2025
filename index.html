@@ -130,6 +130,7 @@
   <!-- ========== TẢI FILE DỮ LIỆU ========== -->
   <script src="js/data.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/logic.js"></script>
 
   <script>
     // Hàm chạy mô phỏng (Logic nằm tại HTML, gọi hàm tính toán từ Main)
@@ -143,20 +144,11 @@
       }
 
       if (val > nguong) {
-        // ============================================================
-        // KHU VỰC TÍNH TOÁN BÁN KÍNH (LINK TỪ MAIN.JS)
-
-        // ============================================================
-        let radius = ;
-
-        // [CHỪA TRỐNG ĐỂ GỌI HÀM TÍNH TOÁN]
-        if (typeof getFloodRadius === 'function') {
-          radius = getFloodRadius(val, nguong);
-        }
-        // ============================================================
-
         if (currentMarker) {
           const center = currentMarker.getLatLng();
+
+          // Gọi hàm tính bán kính nguy hiểm từ logic.js
+          const radius = riskRadiusAtC(center.lat, center.lng, 0, val, doCao) * 1000; // Đổi km sang mét
 
           // Vẽ vùng ngập màu đỏ
           L.circle(center, {
