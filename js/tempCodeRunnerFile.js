@@ -55,7 +55,7 @@ function findDamsInRadius(lat1, lon1, radiusKm) {
 // Tính ngưỡng an toàn
 function limitSafe(h){
     const k = 1.5;
-    const maxH = 1000;
+    const maxH = 200;
     const limitsafe = h/maxH * 5000;
     return limitsafe;
 }
