@@ -57,7 +57,7 @@
       </div>
       <div class="legend-item l-reservoir" onclick="toggleDamLayer('reservoir', this)">
         <div class="legend-color"></div>
-        <div class="legend-text">Hồ chứa nước và đập</div>
+        <div class="legend-text">Hồ chứa nước</div>
       </div>
       <div class="legend-item l-danger" onclick="toggleDangerLayer(this)">
         <div class="legend-color"></div>
@@ -130,6 +130,49 @@
   <!-- ========== TẢI FILE DỮ LIỆU ========== -->
   <script src="js/data.js"></script>
   <script src="js/main.js"></script>
+
+  <script>
+    // Hàm chạy mô phỏng (Logic nằm tại HTML, gọi hàm tính toán từ Main)
+    function chaySim(doCao) {
+      const val = parseFloat(document.getElementById('inpXa').value);
+      const nguong = limitSafe(doCao); // Hàm limitSafe từ main.js
+
+      // Xóa vùng ngập cũ nếu có
+      if (typeof simulationLayer !== 'undefined') {
+        simulationLayer.clearLayers();
+      }
+
+      if (val > nguong) {
+        // ============================================================
+        // KHU VỰC TÍNH TOÁN BÁN KÍNH (LINK TỪ MAIN.JS)
+
+        // ============================================================
+        let radius = ;
+
+        // [CHỪA TRỐNG ĐỂ GỌI HÀM TÍNH TOÁN]
+        if (typeof getFloodRadius === 'function') {
+          radius = getFloodRadius(val, nguong);
+        }
+        // ============================================================
+
+        if (currentMarker) {
+          const center = currentMarker.getLatLng();
+
+          // Vẽ vùng ngập màu đỏ
+          L.circle(center, {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.5,
+            radius: radius
+          }).addTo(simulationLayer).bindPopup(`Vùng ngập dự báo: ${(radius / 1000).toFixed(2)} km`);
+
+          alert(`CẢNH BÁO: Xả lũ vượt ngưỡng (${val} > ${nguong})! Đã hiển thị vùng ngập bán kính ${(radius / 1000).toFixed(2)} km.`);
+        }
+      } else {
+        alert(`AN TOÀN: Mức xả ${val} nằm trong ngưỡng cho phép (${nguong}).`);
+      }
+    }
+  </script>
 
   <!-- Code injected by live-server -->
   <script>

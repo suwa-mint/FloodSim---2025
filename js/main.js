@@ -16,6 +16,7 @@ let damStates = { large: false, medium: false, reservoir: false };
 let dangerLayer = L.layerGroup();
 let isDangerLayerVisible = false;
 let currentMarker = null;
+let simulationLayer = L.layerGroup(); // Layer hiển thị vùng ngập
 
 // 2. LOGIC TINH TOAN
 
@@ -63,11 +64,14 @@ function initializeMap() {
         maxZoom: 20, noWrap: true, bounds: CONFIG.vietnamBounds,
     }).addTo(map);
 
+    simulationLayer.addTo(map); // Thêm layer vùng ngập vào bản đồ
+
     // Su kien CLICK ban do (Quan trong)
     map.on('click', async function (e) {
         if (currentMarker) {
             map.removeLayer(currentMarker);
             currentMarker = null;
+            simulationLayer.clearLayers(); // Xóa vùng ngập khi click lại
             return;
         }
 
@@ -250,11 +254,8 @@ function flyTo(lat, lng, name) {
     document.getElementById("searchResults").style.display = "none";
     document.getElementById("searchInput").value = name;
 }
+// thay logic tinh toan mo phong vao day xoá code cũ
 
-function chaySim(doCao) {
-    const val = document.getElementById('inpXa').value;
-    alert(`MÔ PHỎNG:\nXả lũ: ${val} m³/s\nĐộ cao: ${doCao}m\n-> Đã gửi cảnh báo về trung tâm!`);
-}
 
 // Xu ly chi tiet dap & modal anh
 function openDamDetail(id) {
