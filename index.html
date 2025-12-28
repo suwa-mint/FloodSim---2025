@@ -57,7 +57,11 @@
       </div>
       <div class="legend-item l-reservoir" onclick="toggleDamLayer('reservoir', this)">
         <div class="legend-color"></div>
-        <div class="legend-text">Hồ chứa nước</div>
+        <div class="legend-text">Hồ chứa nước và đập</div>
+      </div>
+      <div class="legend-item l-safe">
+        <div class="legend-color"></div>
+        <div class="legend-text">Vùng an toàn (ít ngập)</div>
       </div>
       <div class="legend-item l-danger" onclick="toggleDangerLayer(this)">
         <div class="legend-color"></div>
@@ -130,7 +134,6 @@
   <!-- ========== TẢI FILE DỮ LIỆU ========== -->
   <script src="js/data.js"></script>
   <script src="js/main.js"></script>
-  <script src="js/logic.js"></script>
 
   <script>
     // Hàm chạy mô phỏng (Logic nằm tại HTML, gọi hàm tính toán từ Main)
@@ -147,7 +150,7 @@
         if (currentMarker) {
           const center = currentMarker.getLatLng();
 
-          // Gọi hàm tính bán kính nguy hiểm từ logic.js
+          // Gọi hàm tính bán kính nguy hiểm từ main.js
           const radius = riskRadiusAtC(center.lat, center.lng, 0, val, doCao) * 1000; // Đổi km sang mét
 
           // Vẽ vùng ngập màu đỏ
