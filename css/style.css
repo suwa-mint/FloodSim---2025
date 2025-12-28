@@ -582,9 +582,6 @@ body {
 .l-reservoir { border-left-color: #0066ff; }
 .l-reservoir .legend-color { background: #0066ff; border-color: #fff; }
 
-.l-safe { border-left-color: #33cc33; }
-.l-safe .legend-color { background: #33cc33; }
-
 .l-danger { border-left-color: #ff0000; }
 .l-danger .legend-color { background: rgba(255, 0, 0, 0.5); border: 2px solid #ff0000; }
 
