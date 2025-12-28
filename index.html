@@ -47,28 +47,28 @@
     <!-- Phần chú thích bản đồ -->
     <div class="legend-section">
       <div class="section-title"><i class="fas fa-map-marker-alt"></i>CHÚ THÍCH BẢN ĐỒ</div>
-      <div class="legend-item" style="border-left-color: #33ebff;" onclick="toggleDamLayer('large', this)">
-        <div class="legend-color" style="background: #33ebff; border-color: #fff;"></div>
+      <div class="legend-item l-large" onclick="toggleDamLayer('large', this)">
+        <div class="legend-color"></div>
         <div class="legend-text">Thủy điện lớn (>100MW)</div>
       </div>
-      <div class="legend-item" style="border-left-color: #ff9900;" onclick="toggleDamLayer('medium', this)">
-        <div class="legend-color" style="background: #ff9900; border-color: #fff;"></div>
+      <div class="legend-item l-medium" onclick="toggleDamLayer('medium', this)">
+        <div class="legend-color"></div>
         <div class="legend-text">Thủy điện vừa (30-100MW)</div>
       </div>
-      <div class="legend-item" style="border-left-color: #0066ff;" onclick="toggleDamLayer('reservoir', this)">
-        <div class="legend-color" style="background: #0066ff; border-color: #fff;"></div>
+      <div class="legend-item l-reservoir" onclick="toggleDamLayer('reservoir', this)">
+        <div class="legend-color"></div>
         <div class="legend-text">Hồ chứa nước và đập</div>
       </div>
-      <div class="legend-item" style="border-left-color: #33cc33">
-        <div class="legend-color" style="background: #33cc33"></div>
+      <div class="legend-item l-safe">
+        <div class="legend-color"></div>
         <div class="legend-text">Vùng an toàn (ít ngập)</div>
       </div>
-      <div class="legend-item" style="border-left-color: #ff0000;" onclick="toggleDangerLayer(this)">
-        <div class="legend-color" style="background: rgba(255, 0, 0, 0.5); border: 2px solid #ff0000;"></div>
+      <div class="legend-item l-danger" onclick="toggleDangerLayer(this)">
+        <div class="legend-color"></div>
         <div class="legend-text">Vùng nguy hiểm (thường xuyên ngập)</div>
       </div>
-      <div class="legend-item" style="border-left-color: #800080">
-        <div class="legend-color" style="background: rgba(128,0,128,0.3); border: 2px solid #800080;"></div>
+      <div class="legend-item l-flood">
+        <div class="legend-color"></div>
         <div class="legend-text">Khu vực ảnh hưởng xả lũ</div>
       </div>
     </div>
@@ -120,7 +120,7 @@
   <div class="dam-detail-panel" id="damDetailPanel">
     <button class="close-detail" onclick="closeDamDetail()">&times;</button>
     <img src="" alt="" class="dam-detail-image" id="damDetailImage" onclick="openImageModal(this.src)"
-      style="cursor: pointer;" title="Nhấn để phóng to">
+      title="Nhấn để phóng to">
     <div class="dam-detail-title" id="damDetailTitle"></div>
     <div class="dam-detail-info" id="damDetailInfo"></div>
   </div>

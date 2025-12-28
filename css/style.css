@@ -571,3 +571,22 @@ body {
 .sim-btn:hover {
     background: #0055cc;
 }
+
+/* ========== MÀU SẮC CHÚ THÍCH (TỪ HTML) ========== */
+.l-large { border-left-color: #33ebff; }
+.l-large .legend-color { background: #33ebff; border-color: #fff; }
+
+.l-medium { border-left-color: #ff9900; }
+.l-medium .legend-color { background: #ff9900; border-color: #fff; }
+
+.l-reservoir { border-left-color: #0066ff; }
+.l-reservoir .legend-color { background: #0066ff; border-color: #fff; }
+
+.l-safe { border-left-color: #33cc33; }
+.l-safe .legend-color { background: #33cc33; }
+
+.l-danger { border-left-color: #ff0000; }
+.l-danger .legend-color { background: rgba(255, 0, 0, 0.5); border: 2px solid #ff0000; }
+
+.l-flood { border-left-color: #800080; }
+.l-flood .legend-color { background: rgba(128,0,128,0.3); border: 2px solid #800080; }
